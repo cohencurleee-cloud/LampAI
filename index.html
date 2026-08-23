@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LampAI</title>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -144,6 +147,10 @@
       font-weight: bold;
     }
 
+    .send:disabled {
+      opacity: 0.5;
+    }
+
     .disclaimer {
       text-align: center;
       color: #656d78;
@@ -151,8 +158,15 @@
       padding-bottom: 9px;
     }
 
+    .thinking {
+      opacity: 0.65;
+      font-style: italic;
+    }
+
     @media (max-width: 600px) {
-      h1 { font-size: 27px; }
+      h1 {
+        font-size: 27px;
+      }
 
       .suggestions {
         flex-direction: column;
@@ -167,6 +181,7 @@
 </head>
 
 <body>
+
   <div class="app">
 
     <header>
@@ -175,13 +190,19 @@
     </header>
 
     <main>
+
       <div id="chat">
+
         <div class="welcome">
+
           <div class="lamp">💡</div>
+
           <h1>What can I help with?</h1>
+
           <p>Ask LampAI anything.</p>
 
           <div class="suggestions">
+
             <button onclick="suggest('Explain something complicated simply')">
               Explain something
             </button>
@@ -193,12 +214,18 @@
             <button onclick="suggest('Write me a short story')">
               Create something
             </button>
+
           </div>
+
         </div>
+
       </div>
 
       <form class="composer" onsubmit="sendMessage(event)">
-        <button type="button" class="icon">＋</button>
+
+        <button type="button" class="icon">
+          ＋
+        </button>
 
         <input
           id="input"
@@ -206,57 +233,151 @@
           autocomplete="off"
         >
 
-        <button type="button" class="icon">🎙️</button>
+        <button type="button" class="icon">
+          🎙️
+        </button>
 
-        <button class="send" type="submit">
+        <button id="send" class="send" type="submit">
           ➤
         </button>
+
       </form>
 
       <div class="disclaimer">
         LampAI can make mistakes. Check important information.
       </div>
+
     </main>
+
   </div>
 
+
   <script>
+
     const chat = document.getElementById("chat");
     const input = document.getElementById("input");
+    const sendButton = document.getElementById("send");
+
 
     function suggest(text) {
+
       input.value = text;
       input.focus();
+
     }
 
-    function sendMessage(event) {
+
+    function addMessage(text, type) {
+
+      const message = document.createElement("div");
+
+      message.className = "message " + type;
+
+      message.textContent = text;
+
+      chat.appendChild(message);
+
+      chat.scrollTop = chat.scrollHeight;
+
+      return message;
+
+    }
+
+
+    async function sendMessage(event) {
+
       event.preventDefault();
 
       const text = input.value.trim();
+
       if (!text) return;
 
+
       const welcome = document.querySelector(".welcome");
-      if (welcome) welcome.remove();
+
+      if (welcome) {
+        welcome.remove();
+      }
+
 
       addMessage(text, "user");
 
       input.value = "";
 
-      setTimeout(() => {
+      input.disabled = true;
+
+      sendButton.disabled = true;
+
+
+      const thinking = addMessage(
+        "LampAI is thinking...",
+        "ai thinking"
+      );
+
+
+      try {
+
+        const response = await fetch("/api/chat", {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            message: text
+          })
+
+        });
+
+
+        const data = await response.json();
+
+
+        thinking.remove();
+
+
+        if (!response.ok) {
+
+          addMessage(
+            data.error || "LampAI ran into an error.",
+            "ai"
+          );
+
+          return;
+
+        }
+
+
         addMessage(
-          "LampAI is connected to the interface. The actual AI brain is the next thing we're adding. 🔥",
+          data.reply || "LampAI didn't return a response.",
           "ai"
         );
-      }, 500);
+
+
+      } catch (error) {
+
+        thinking.remove();
+
+        addMessage(
+          "LampAI couldn't connect to the AI server.",
+          "ai"
+        );
+
+      } finally {
+
+        input.disabled = false;
+
+        sendButton.disabled = false;
+
+        input.focus();
+
+      }
+
     }
 
-    function addMessage(text, type) {
-      const message = document.createElement("div");
-      message.className = "message " + type;
-      message.textContent = text;
-
-      chat.appendChild(message);
-      chat.scrollTop = chat.scrollHeight;
-    }
   </script>
+
 </body>
 </html>
