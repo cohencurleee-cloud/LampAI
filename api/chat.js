@@ -4,11 +4,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { message, instructions } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "Missing message" });
     }
+
+    const customInstructions =
+      instructions?.trim() ||
+      "Be helpful, intelligent, friendly, and clear.";
 
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -20,11 +24,19 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           model: "openai/gpt-oss-20b",
+
           messages: [
             {
               role: "system",
-              content:
-                "You are LampAI, a helpful, smart, friendly general-purpose AI assistant."
+              content: `
+You are LampAI.
+
+Follow these custom instructions from the user:
+
+${customInstructions}
+
+Always follow the user's custom instructions when responding, as long as they don't conflict with safety requirements.
+`
             },
             {
               role: "user",
@@ -44,7 +56,9 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "No response received."
+      reply:
+        data.choices?.[0]?.message?.content ||
+        "LampAI didn't return a response."
     });
 
   } catch (error) {
