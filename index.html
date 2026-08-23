@@ -55,7 +55,7 @@
 
     .welcome {
       text-align: center;
-      margin-top: 18vh;
+      margin-top: 15vh;
     }
 
     .lamp {
@@ -79,7 +79,8 @@
       margin-top: 25px;
     }
 
-    .suggestions button {
+    .suggestions button,
+    .settings-button {
       background: #171b21;
       color: white;
       border: 1px solid #303640;
@@ -147,10 +148,6 @@
       font-weight: bold;
     }
 
-    .send:disabled {
-      opacity: 0.5;
-    }
-
     .disclaimer {
       text-align: center;
       color: #656d78;
@@ -158,9 +155,83 @@
       padding-bottom: 9px;
     }
 
-    .thinking {
-      opacity: 0.65;
-      font-style: italic;
+    /* SETTINGS */
+
+    .settings-button {
+      position: absolute;
+      right: 75px;
+      top: 12px;
+      padding: 8px 12px;
+    }
+
+    .settings {
+      display: none;
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      background: rgba(0,0,0,.65);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .settings.open {
+      display: flex;
+    }
+
+    .settings-box {
+      width: min(520px, 100%);
+      background: #15191f;
+      border: 1px solid #303640;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.5);
+    }
+
+    .settings-box h2 {
+      margin-top: 0;
+    }
+
+    .settings-box p {
+      color: #929aa5;
+      font-size: 14px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      background: #0d1014;
+      color: white;
+      border: 1px solid #303640;
+      border-radius: 12px;
+      padding: 13px;
+      outline: none;
+      font: inherit;
+    }
+
+    .settings-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .save {
+      background: white;
+      color: black;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: bold;
+    }
+
+    .close {
+      background: #252a31;
+      color: white;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 16px;
     }
 
     @media (max-width: 600px) {
@@ -176,208 +247,298 @@
       .suggestions button {
         width: 100%;
       }
+
+      .settings-button {
+        right: 65px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="app">
+<div class="app">
 
-    <header>
-      💡 LampAI
-      <span class="status">● Online</span>
-    </header>
+  <header>
+    💡 LampAI
 
-    <main>
+    <button class="settings-button" onclick="openSettings()">
+      ⚙️
+    </button>
 
-      <div id="chat">
+    <span class="status">● Online</span>
+  </header>
 
-        <div class="welcome">
+  <main>
 
-          <div class="lamp">💡</div>
+    <div id="chat">
 
-          <h1>What can I help with?</h1>
+      <div class="welcome">
 
-          <p>Ask LampAI anything.</p>
+        <div class="lamp">💡</div>
 
-          <div class="suggestions">
+        <h1>What can I help with?</h1>
 
-            <button onclick="suggest('Explain something complicated simply')">
-              Explain something
-            </button>
+        <p>Ask LampAI anything.</p>
 
-            <button onclick="suggest('Give me some creative ideas')">
-              Brainstorm ideas
-            </button>
+        <div class="suggestions">
 
-            <button onclick="suggest('Write me a short story')">
-              Create something
-            </button>
+          <button onclick="suggest('Explain something complicated simply')">
+            Explain something
+          </button>
 
-          </div>
+          <button onclick="suggest('Give me some creative ideas')">
+            Brainstorm ideas
+          </button>
+
+          <button onclick="suggest('Write me a short story')">
+            Create something
+          </button>
 
         </div>
 
       </div>
 
-      <form class="composer" onsubmit="sendMessage(event)">
+    </div>
 
-        <button type="button" class="icon">
-          ＋
-        </button>
+    <form class="composer" onsubmit="sendMessage(event)">
 
-        <input
-          id="input"
-          placeholder="Message LampAI..."
-          autocomplete="off"
-        >
+      <button type="button" class="icon">
+        ＋
+      </button>
 
-        <button type="button" class="icon">
-          🎙️
-        </button>
+      <input
+        id="input"
+        placeholder="Message LampAI..."
+        autocomplete="off"
+      >
 
-        <button id="send" class="send" type="submit">
-          ➤
-        </button>
+      <button type="button" class="icon">
+        🎙️
+      </button>
 
-      </form>
+      <button id="send" class="send" type="submit">
+        ➤
+      </button>
 
-      <div class="disclaimer">
-        LampAI can make mistakes. Check important information.
-      </div>
+    </form>
 
-    </main>
+    <div class="disclaimer">
+      LampAI can make mistakes. Check important information.
+    </div>
+
+  </main>
+
+</div>
+
+
+<!-- SETTINGS -->
+
+<div id="settings" class="settings">
+
+  <div class="settings-box">
+
+    <h2>⚙️ LampAI Settings</h2>
+
+    <p>
+      Tell LampAI how you want it to behave.
+      You can change its personality, tone, mood, or style.
+    </p>
+
+    <textarea
+      id="instructions"
+      placeholder="Example: Be funny, energetic, sarcastic, and talk like a close friend."
+    ></textarea>
+
+    <div class="settings-actions">
+
+      <button class="close" onclick="closeSettings()">
+        Cancel
+      </button>
+
+      <button class="save" onclick="saveInstructions()">
+        Save
+      </button>
+
+    </div>
 
   </div>
 
-
-  <script>
-
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("input");
-    const sendButton = document.getElementById("send");
+</div>
 
 
-    function suggest(text) {
+<script>
 
-      input.value = text;
-      input.focus();
-
-    }
-
-
-    function addMessage(text, type) {
-
-      const message = document.createElement("div");
-
-      message.className = "message " + type;
-
-      message.textContent = text;
-
-      chat.appendChild(message);
-
-      chat.scrollTop = chat.scrollHeight;
-
-      return message;
-
-    }
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+const sendButton = document.getElementById("send");
+const instructionsBox = document.getElementById("instructions");
 
 
-    async function sendMessage(event) {
+/* LOAD SAVED INSTRUCTIONS */
 
-      event.preventDefault();
-
-      const text = input.value.trim();
-
-      if (!text) return;
+instructionsBox.value =
+  localStorage.getItem("lampai_instructions") || "";
 
 
-      const welcome = document.querySelector(".welcome");
+/* SETTINGS */
 
-      if (welcome) {
-        welcome.remove();
-      }
+function openSettings() {
+  document.getElementById("settings").classList.add("open");
+}
+
+function closeSettings() {
+  document.getElementById("settings").classList.remove("open");
+}
+
+function saveInstructions() {
+
+  const instructions = instructionsBox.value.trim();
+
+  localStorage.setItem(
+    "lampai_instructions",
+    instructions
+  );
+
+  closeSettings();
+
+}
 
 
-      addMessage(text, "user");
+/* SUGGESTIONS */
 
-      input.value = "";
+function suggest(text) {
 
-      input.disabled = true;
+  input.value = text;
 
-      sendButton.disabled = true;
+  input.focus();
+
+}
 
 
-      const thinking = addMessage(
-        "LampAI is thinking...",
-        "ai thinking"
+/* ADD MESSAGE */
+
+function addMessage(text, type) {
+
+  const message = document.createElement("div");
+
+  message.className = "message " + type;
+
+  message.textContent = text;
+
+  chat.appendChild(message);
+
+  chat.scrollTop = chat.scrollHeight;
+
+  return message;
+
+}
+
+
+/* SEND MESSAGE */
+
+async function sendMessage(event) {
+
+  event.preventDefault();
+
+  const text = input.value.trim();
+
+  if (!text) return;
+
+
+  const welcome = document.querySelector(".welcome");
+
+  if (welcome) {
+    welcome.remove();
+  }
+
+
+  addMessage(text, "user");
+
+  input.value = "";
+
+  input.disabled = true;
+
+  sendButton.disabled = true;
+
+
+  const thinking = addMessage(
+    "LampAI is thinking...",
+    "ai"
+  );
+
+
+  try {
+
+    const instructions =
+      localStorage.getItem("lampai_instructions") || "";
+
+
+    const response = await fetch("/api/chat", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+
+        message: text,
+
+        instructions: instructions
+
+      })
+
+    });
+
+
+    const data = await response.json();
+
+
+    thinking.remove();
+
+
+    if (!response.ok) {
+
+      addMessage(
+        data.error || "LampAI ran into an error.",
+        "ai"
       );
 
-
-      try {
-
-        const response = await fetch("/api/chat", {
-
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            message: text
-          })
-
-        });
-
-
-        const data = await response.json();
-
-
-        thinking.remove();
-
-
-        if (!response.ok) {
-
-          addMessage(
-            data.error || "LampAI ran into an error.",
-            "ai"
-          );
-
-          return;
-
-        }
-
-
-        addMessage(
-          data.reply || "LampAI didn't return a response.",
-          "ai"
-        );
-
-
-      } catch (error) {
-
-        thinking.remove();
-
-        addMessage(
-          "LampAI couldn't connect to the AI server.",
-          "ai"
-        );
-
-      } finally {
-
-        input.disabled = false;
-
-        sendButton.disabled = false;
-
-        input.focus();
-
-      }
+      return;
 
     }
 
-  </script>
+
+    addMessage(
+      data.reply || "LampAI didn't return a response.",
+      "ai"
+    );
+
+
+  } catch (error) {
+
+    thinking.remove();
+
+    addMessage(
+      "LampAI couldn't connect to the AI server.",
+      "ai"
+    );
+
+  } finally {
+
+    input.disabled = false;
+
+    sendButton.disabled = false;
+
+    input.focus();
+
+  }
+
+}
+
+</script>
 
 </body>
 </html>
