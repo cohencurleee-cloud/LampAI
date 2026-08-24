@@ -42,11 +42,8 @@ export default async function handler(req, res) {
         ? JSON.parse(req.body)
         : req.body || {};
 
-    const message =
-      String(body.message || "").trim();
-
-    const instructions =
-      String(body.instructions || "").trim();
+    const message = String(body.message || "").trim();
+    const instructions = String(body.instructions || "").trim();
 
     const attachments =
       Array.isArray(body.attachments)
@@ -69,12 +66,8 @@ export default async function handler(req, res) {
     }
 
     for (const file of attachments) {
-      const name =
-        String(file?.name || "attachment");
-
-      const type =
-        String(file?.type || "");
-
+      const name = String(file?.name || "attachment");
+      const type = String(file?.type || "");
       const content =
         typeof file?.content === "string"
           ? file.content
@@ -85,8 +78,7 @@ export default async function handler(req, res) {
       if (type.startsWith("image/")) {
         if (!content.startsWith("data:image/")) {
           return res.status(400).json({
-            error:
-              `${name} could not be read as an image.`
+            error: `${name} could not be read as an image.`
           });
         }
 
@@ -118,8 +110,8 @@ export default async function handler(req, res) {
       userContent.push({
         type: "text",
         text:
-          `The user attached "${name}", but this file type cannot currently be read. ` +
-          `Mention that briefly only if it matters.`
+          `The user attached "${name}", but this file type ` +
+          `cannot currently be read. Tell them that briefly only if it matters to their question.`
       });
     }
 
@@ -130,68 +122,59 @@ export default async function handler(req, res) {
       });
     }
 
-    const systemPrompt = `
+    const baseInstructions = `
 You are LampAI.
 
 Answer naturally like a normal person.
 Be concise and direct.
-
 For normal questions, usually answer in 1 to 4 short sentences.
-
 Do not reveal chain-of-thought, private reasoning, scratch work, or internal analysis.
-
-Never output <think> tags.
-Never describe hidden reasoning.
-
+Never output <think> tags or describe your hidden reasoning.
 Use plain text by default.
 Do not use markdown asterisks.
 Do not use bold formatting.
-Do not use markdown bullet lists unless the user asks for a list.
-
+Do not use markdown bullet lists unless the user clearly asks for a list.
 Do not repeat the user's question.
-Do not add unnecessary headings, summaries, disclaimers, or explanations.
-
-For image questions, answer what the user asked first.
-Do not write a giant image-analysis report unless requested.
-
-${instructions ? `User customization:\n${instructions}` : ""}
+Do not add unnecessary sections, headings, disclaimers, or summaries.
+For image questions, identify or answer what the user asked first. Do not write a long visual-analysis report unless requested.
 `;
 
-    const response = await fetch(
-      GROQ_URL,
-      {
-        method: "POST",
+    const systemPrompt =
+      baseInstructions +
+      (instructions
+        ? `\nUser customization:\n${instructions}`
+        : "");
 
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`
-        },
+    const response = await fetch(GROQ_URL, {
+      method: "POST",
 
-        body: JSON.stringify({
-          model: MODEL,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
 
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt
-            },
+      body: JSON.stringify({
+        model: MODEL,
 
-            {
-              role: "user",
-              content: userContent
-            }
-          ],
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: userContent
+          }
+        ],
 
-          reasoning_effort: "none",
-          reasoning_format: "hidden",
+        reasoning_effort: "none",
+        reasoning_format: "hidden",
 
-          temperature: 0.7,
-          top_p: 0.8,
-
-          max_completion_tokens: 700
-        })
-      }
-    );
+        temperature: 0.7,
+        top_p: 0.8,
+        max_completion_tokens: 700
+      })
+    });
 
     const raw = await response.text();
 
@@ -214,4 +197,31 @@ ${instructions ? `User customization:\n${instructions}` : ""}
         error:
           data?.error?.message ||
           raw ||
-          `
+          `Groq failed (${response.status}).`
+      });
+    }
+
+    const reply = cleanReply(
+      data?.choices?.[0]?.message?.content || ""
+    );
+
+    if (!reply) {
+      return res.status(502).json({
+        error: "Groq returned no response."
+      });
+    }
+
+    return res.status(200).json({
+      reply
+    });
+
+  } catch (error) {
+    console.error("LampAI error:", error);
+
+    return res.status(500).json({
+      error:
+        error?.message ||
+        "Server error."
+    });
+  }
+}
