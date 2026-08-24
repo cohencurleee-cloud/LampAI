@@ -295,6 +295,189 @@ header{
   margin-top:6px;
 }
 
+
+/* VOICE MODE */
+
+.voice-mode{
+  position:fixed;
+  inset:0;
+  z-index:90;
+  display:none;
+  flex-direction:column;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(255,255,255,.07),transparent 30%),
+    #07080a;
+  color:#f5f5f5;
+}
+
+.voice-mode.open{
+  display:flex;
+}
+
+.voice-header{
+  height:62px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  background:rgba(7,8,10,.82);
+  backdrop-filter:blur(20px);
+}
+
+.voice-title{
+  font-size:17px;
+  font-weight:700;
+}
+
+.voice-back{
+  position:absolute;
+  left:14px;
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.07);
+  color:#eee;
+  font-size:23px;
+  line-height:1;
+}
+
+.voice-feed{
+  flex:1;
+  overflow-y:auto;
+  width:min(760px,100%);
+  margin:auto;
+  padding:26px 16px 210px;
+}
+
+.voice-feed::-webkit-scrollbar{
+  display:none;
+}
+
+.voice-empty{
+  min-height:55%;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  color:#777d86;
+  font-size:15px;
+  padding:30px;
+}
+
+.voice-row{
+  display:flex;
+  margin:0 0 14px;
+}
+
+.voice-row.user{
+  justify-content:flex-end;
+}
+
+.voice-bubble{
+  max-width:84%;
+  padding:11px 14px;
+  border-radius:18px;
+  font-size:15px;
+  line-height:1.45;
+}
+
+.voice-row.user .voice-bubble{
+  background:#f1f1f1;
+  color:#090909;
+  border-bottom-right-radius:6px;
+}
+
+.voice-row.ai .voice-bubble{
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+  color:#eee;
+  border-bottom-left-radius:6px;
+}
+
+.voice-stage{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  padding:28px 18px calc(24px + env(safe-area-inset-bottom));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background:linear-gradient(transparent,#07080a 22%);
+}
+
+.voice-status{
+  min-height:22px;
+  margin-bottom:15px;
+  color:#9298a1;
+  font-size:14px;
+  text-align:center;
+}
+
+.voice-orb{
+  width:92px;
+  height:92px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 35% 30%,#fff,#b9bec5 32%,#4c5158 70%,#202328);
+  color:#060708;
+  font-size:34px;
+  box-shadow:
+    0 0 0 10px rgba(255,255,255,.035),
+    0 14px 50px rgba(0,0,0,.5);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+
+.voice-orb:active{
+  transform:scale(.94);
+}
+
+.voice-orb.recording{
+  animation:voicePulse 1.15s infinite ease-in-out;
+  box-shadow:
+    0 0 0 12px rgba(255,255,255,.04),
+    0 0 45px rgba(255,255,255,.14);
+}
+
+.voice-orb.busy{
+  opacity:.6;
+}
+
+@keyframes voicePulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.07)}
+}
+
+.voice-hint{
+  margin-top:13px;
+  color:#555b63;
+  font-size:11px;
+  text-align:center;
+}
+
+.voice-replay{
+  margin-top:10px;
+  height:34px;
+  padding:0 13px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:11px;
+  background:rgba(255,255,255,.05);
+  color:#aaa;
+  font-size:12px;
+}
+
+@media(max-width:600px){
+  .voice-header{height:58px}
+  .voice-feed{padding-left:12px;padding-right:12px}
+  .voice-bubble{max-width:90%}
+  .voice-orb{width:88px;height:88px}
+}
+
 /* SETTINGS */
 
 .overlay{
@@ -773,6 +956,28 @@ textarea:focus{
 
 
 
+
+<!-- VOICE MODE -->
+<div class="voice-mode" id="voiceMode" aria-hidden="true">
+  <div class="voice-header">
+    <button type="button" class="voice-back" id="voiceBack" aria-label="Back to chat">‹</button>
+    <div class="voice-title">Voice</div>
+  </div>
+
+  <div class="voice-feed" id="voiceFeed">
+    <div class="voice-empty" id="voiceEmpty">
+      Tap the mic and talk to LampAI.
+    </div>
+  </div>
+
+  <div class="voice-stage">
+    <div class="voice-status" id="voiceStatus">Tap to talk</div>
+    <button type="button" class="voice-orb" id="voiceTalk" aria-label="Start talking">🎙</button>
+    <button type="button" class="voice-replay" id="voiceReplay" hidden>Replay reply</button>
+    <div class="voice-hint">Tap again when you're done</div>
+  </div>
+</div>
+
 <!-- AUTH -->
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-card">
@@ -969,6 +1174,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => { updateAccountUI(sess
 // If the HTML is hosted on GitHub Pages, set this to your FULL Vercel URL,
 // for example: "https://your-project.vercel.app/api/chat".
 const CHAT_API_URL = "/api/chat";
+const VOICE_API_URL = CHAT_API_URL.replace(/\/api\/chat(?:\?.*)?$/, "/api/voice");
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
@@ -1351,6 +1557,354 @@ function addUserMessage(text, files){
 
   return wrapper;
 }
+
+
+
+const micButton = document.getElementById("micButton");
+const voiceMode = document.getElementById("voiceMode");
+const voiceBack = document.getElementById("voiceBack");
+const voiceFeed = document.getElementById("voiceFeed");
+const voiceEmpty = document.getElementById("voiceEmpty");
+const voiceStatus = document.getElementById("voiceStatus");
+const voiceTalk = document.getElementById("voiceTalk");
+const voiceReplay = document.getElementById("voiceReplay");
+
+let voiceRecorder = null;
+let voiceStream = null;
+let voiceChunks = [];
+let voiceBusy = false;
+let voiceStopTimer = null;
+let voiceHistory = [];
+let voiceLastAudio = "";
+let voiceAudioContext = null;
+let voiceAudioSource = null;
+
+function openVoiceMode(){
+  voiceMode.classList.add("open");
+  voiceMode.setAttribute("aria-hidden","false");
+  voiceStatus.textContent = "Tap to talk";
+}
+
+function stopVoiceStream(){
+  if(voiceStream){
+    voiceStream.getTracks().forEach(track => track.stop());
+    voiceStream = null;
+  }
+}
+
+function stopVoicePlayback(){
+  if(voiceAudioSource){
+    try{ voiceAudioSource.stop(); }catch{}
+    voiceAudioSource = null;
+  }
+
+  if("speechSynthesis" in window){
+    window.speechSynthesis.cancel();
+  }
+}
+
+function closeVoiceMode(){
+  if(voiceRecorder && voiceRecorder.state === "recording"){
+    try{ voiceRecorder.stop(); }catch{}
+  }
+
+  clearTimeout(voiceStopTimer);
+  stopVoiceStream();
+  stopVoicePlayback();
+
+  voiceMode.classList.remove("open");
+  voiceMode.setAttribute("aria-hidden","true");
+  voiceStatus.textContent = "Tap to talk";
+  voiceTalk.classList.remove("recording","busy");
+}
+
+function addVoiceBubble(text,type){
+  if(voiceEmpty) voiceEmpty.remove();
+
+  const row = document.createElement("div");
+  row.className = "voice-row " + type;
+
+  const bubble = document.createElement("div");
+  bubble.className = "voice-bubble";
+  bubble.textContent = text;
+
+  row.appendChild(bubble);
+  voiceFeed.appendChild(row);
+  voiceFeed.scrollTop = voiceFeed.scrollHeight;
+
+  return row;
+}
+
+function preferredRecordingType(){
+  const types = [
+    "audio/mp4",
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/ogg;codecs=opus"
+  ];
+
+  return types.find(type =>
+    window.MediaRecorder &&
+    MediaRecorder.isTypeSupported &&
+    MediaRecorder.isTypeSupported(type)
+  ) || "";
+}
+
+function blobToDataURL(blob){
+  return new Promise((resolve,reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function extensionForMime(type=""){
+  if(type.includes("mp4")) return "m4a";
+  if(type.includes("ogg")) return "ogg";
+  if(type.includes("webm")) return "webm";
+  if(type.includes("wav")) return "wav";
+  return "audio";
+}
+
+async function unlockVoiceAudio(){
+  try{
+    if(!voiceAudioContext){
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if(AudioCtx) voiceAudioContext = new AudioCtx();
+    }
+
+    if(voiceAudioContext?.state === "suspended"){
+      await voiceAudioContext.resume();
+    }
+  }catch{}
+}
+
+async function playVoiceAudio(base64, fallbackText=""){
+  stopVoicePlayback();
+
+  if(base64 && voiceAudioContext){
+    try{
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+
+      for(let i = 0; i < binary.length; i++){
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      const buffer = await voiceAudioContext.decodeAudioData(bytes.buffer.slice(0));
+      const source = voiceAudioContext.createBufferSource();
+
+      source.buffer = buffer;
+      source.connect(voiceAudioContext.destination);
+      source.start();
+
+      voiceAudioSource = source;
+
+      source.onended = () => {
+        if(voiceAudioSource === source) voiceAudioSource = null;
+        if(!voiceBusy) voiceStatus.textContent = "Tap to talk";
+      };
+
+      return;
+    }catch(error){
+      console.warn("Voice audio playback failed:", error);
+    }
+  }
+
+  if(fallbackText && "speechSynthesis" in window){
+    const utterance = new SpeechSynthesisUtterance(fallbackText);
+    utterance.rate = 1.02;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+async function sendVoiceTurn(blob){
+  voiceBusy = true;
+  voiceTalk.classList.remove("recording");
+  voiceTalk.classList.add("busy");
+  voiceTalk.disabled = true;
+  voiceStatus.textContent = "Thinking...";
+
+  try{
+    if(location.hostname.endsWith("github.io") && VOICE_API_URL.startsWith("/")){
+      throw new Error(
+        "Voice Mode needs the full Vercel API URL. Set CHAT_API_URL to your Vercel /api/chat URL."
+      );
+    }
+
+    const audio = await blobToDataURL(blob);
+    const mimeType = blob.type || "audio/mp4";
+
+    const response = await fetch(VOICE_API_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        action:"turn",
+        audio,
+        mime_type:mimeType,
+        filename:`voice.${extensionForMime(mimeType)}`,
+        instructions:localStorage.getItem("lampai_instructions") || "",
+        history:voiceHistory.slice(-8)
+      })
+    });
+
+    const raw = await response.text();
+    let data = {};
+
+    try{
+      data = raw ? JSON.parse(raw) : {};
+    }catch{
+      data = {error:raw || "Voice Mode returned an invalid response."};
+    }
+
+    if(!response.ok){
+      throw new Error(data.error || "Voice Mode failed.");
+    }
+
+    const transcript = cleanDisplayText(data.transcript || "");
+    const reply = cleanDisplayText(data.reply || "");
+
+    if(transcript){
+      addVoiceBubble(transcript,"user");
+      voiceHistory.push({role:"user",content:transcript});
+    }
+
+    if(reply){
+      addVoiceBubble(reply,"ai");
+      voiceHistory.push({role:"assistant",content:reply});
+    }
+
+    voiceHistory = voiceHistory.slice(-10);
+
+    voiceLastAudio = data.audio || "";
+    voiceReplay.hidden = !reply;
+    voiceStatus.textContent = data.audio ? "Speaking..." : "Reply ready";
+
+    await playVoiceAudio(voiceLastAudio,reply);
+
+    if(!data.audio){
+      voiceStatus.textContent = "Tap to talk";
+    }
+
+  }catch(error){
+    addVoiceBubble(
+      cleanDisplayText(error?.message || "Voice Mode couldn't connect."),
+      "ai"
+    );
+    voiceStatus.textContent = "Tap to try again";
+  }finally{
+    voiceBusy = false;
+    voiceTalk.classList.remove("busy");
+    voiceTalk.disabled = false;
+  }
+}
+
+async function startVoiceRecording(){
+  if(voiceBusy) return;
+
+  if(!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder){
+    addVoiceBubble("Voice recording isn't supported in this browser.","ai");
+    return;
+  }
+
+  stopVoicePlayback();
+  await unlockVoiceAudio();
+
+  try{
+    voiceStream = await navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:true,
+        noiseSuppression:true,
+        autoGainControl:true
+      }
+    });
+
+    const mimeType = preferredRecordingType();
+    const options = mimeType ? {mimeType} : undefined;
+
+    voiceRecorder = new MediaRecorder(voiceStream,options);
+    voiceChunks = [];
+
+    voiceRecorder.ondataavailable = event => {
+      if(event.data && event.data.size){
+        voiceChunks.push(event.data);
+      }
+    };
+
+    voiceRecorder.onstop = async () => {
+      clearTimeout(voiceStopTimer);
+
+      const blob = new Blob(
+        voiceChunks,
+        {type:voiceRecorder.mimeType || mimeType || "audio/mp4"}
+      );
+
+      voiceChunks = [];
+      stopVoiceStream();
+
+      if(blob.size < 100){
+        voiceStatus.textContent = "I didn't hear anything";
+        return;
+      }
+
+      await sendVoiceTurn(blob);
+    };
+
+    voiceRecorder.start();
+
+    voiceTalk.classList.add("recording");
+    voiceTalk.setAttribute("aria-label","Stop talking");
+    voiceStatus.textContent = "Listening...";
+
+    voiceStopTimer = setTimeout(() => {
+      if(voiceRecorder?.state === "recording"){
+        voiceRecorder.stop();
+      }
+    },30000);
+
+  }catch(error){
+    stopVoiceStream();
+    voiceStatus.textContent =
+      error?.name === "NotAllowedError"
+        ? "Microphone permission is off"
+        : "Couldn't start the microphone";
+  }
+}
+
+function stopVoiceRecording(){
+  if(voiceRecorder?.state === "recording"){
+    voiceStatus.textContent = "Got it...";
+    voiceRecorder.stop();
+    voiceTalk.classList.remove("recording");
+    voiceTalk.setAttribute("aria-label","Start talking");
+  }
+}
+
+micButton.onclick = openVoiceMode;
+voiceBack.onclick = closeVoiceMode;
+
+voiceTalk.onclick = async () => {
+  if(voiceBusy) return;
+
+  if(voiceRecorder?.state === "recording"){
+    stopVoiceRecording();
+  }else{
+    await startVoiceRecording();
+  }
+};
+
+voiceReplay.onclick = async () => {
+  const lastAssistant = [...voiceHistory]
+    .reverse()
+    .find(item => item.role === "assistant")?.content || "";
+
+  await unlockVoiceAudio();
+  await playVoiceAudio(voiceLastAudio,lastAssistant);
+};
 
 
 form.addEventListener("submit", async e => {
