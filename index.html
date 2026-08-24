@@ -199,6 +199,27 @@ header{
 
 .thinking{
   color:#777d86!important;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-width:58px;
+}
+
+.thinking-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#777d86;
+  opacity:.28;
+  animation:thinkingPulse 1s infinite ease-in-out;
+}
+
+.thinking-dot:nth-child(2){animation-delay:.15s}
+.thinking-dot:nth-child(3){animation-delay:.30s}
+
+@keyframes thinkingPulse{
+  0%,80%,100%{opacity:.25;transform:translateY(0)}
+  40%{opacity:1;transform:translateY(-3px)}
 }
 
 .bottom{
@@ -1220,6 +1241,71 @@ function addMessage(text,type){
 }
 
 
+
+function addThinkingMessage(){
+  const wrapper = document.createElement("div");
+  wrapper.className = "message ai";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble thinking";
+
+  for(let i = 0; i < 3; i++){
+    const dot = document.createElement("span");
+    dot.className = "thinking-dot";
+    bubble.appendChild(dot);
+  }
+
+  wrapper.appendChild(bubble);
+  chat.appendChild(wrapper);
+  chat.scrollTop = chat.scrollHeight;
+
+  return wrapper;
+}
+
+function cleanDisplayText(text = ""){
+  return String(text)
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think>[\s\S]*/gi, "")
+    .replace(/\*\*/g, "")
+    .replace(/^\s*\*\s+/gm, "")
+    .trim();
+}
+
+function typeAIMessage(text){
+  const cleaned = cleanDisplayText(text);
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "message ai";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  wrapper.appendChild(bubble);
+  chat.appendChild(wrapper);
+
+  const chunks = cleaned.match(/\S+\s*/g) || [cleaned];
+  let index = 0;
+
+  const timer = setInterval(() => {
+    if(index >= chunks.length){
+      clearInterval(timer);
+      return;
+    }
+
+    // A few words at a time feels fast without dumping the whole answer instantly.
+    const amount = Math.min(3, chunks.length - index);
+
+    for(let i = 0; i < amount; i++){
+      bubble.textContent += chunks[index++];
+    }
+
+    chat.scrollTop = chat.scrollHeight;
+  }, 32);
+
+  return wrapper;
+}
+
+
 function addUserMessage(text, files){
   const wrapper = document.createElement("div");
   wrapper.className = "message user";
@@ -1291,12 +1377,7 @@ form.addEventListener("submit", async e => {
   send.disabled = true;
 
 
-  const thinking = addMessage(
-    "Thinking...",
-    "ai"
-  );
-
-  thinking.querySelector(".bubble").classList.add("thinking");
+  const thinking = addThinkingMessage();
 
 
   try{
@@ -1340,7 +1421,7 @@ form.addEventListener("submit", async e => {
     if(!response.ok){
 
       addMessage(
-        data.error || "Something went wrong.",
+        cleanDisplayText(data.error || "Something went wrong."),
         "ai"
       );
 
@@ -1349,9 +1430,8 @@ form.addEventListener("submit", async e => {
     }
 
 
-    addMessage(
-      data.reply || "I didn't get a response.",
-      "ai"
+    typeAIMessage(
+      data.reply || "I didn't get a response."
     );
 
     selectedAttachments = [];
@@ -1363,7 +1443,7 @@ form.addEventListener("submit", async e => {
     thinking.remove();
 
     addMessage(
-      error?.message || "I couldn't connect right now.",
+      cleanDisplayText(error?.message || "I couldn't connect right now."),
       "ai"
     );
 
