@@ -1625,7 +1625,7 @@ let voiceListenStartedAt = 0;
 const VOICE_THRESHOLD = 0.026;
 const VOICE_SILENCE_MS = 950;
 const VOICE_MIN_SPEECH_MS = 260;
-const VOICE_MAX_TURN_MS = 28000;
+const VOICE_MAX_TURN_MS = 12000;
 
 function setVoiceState(state, title, subtitle=""){
   voiceMode.classList.remove("listening","thinking","speaking");
@@ -1818,7 +1818,9 @@ async function startListening(){
   }
 
   const mimeType = preferredRecordingType();
-  const options = mimeType ? {mimeType} : undefined;
+  const options = mimeType
+    ? {mimeType, audioBitsPerSecond:32000}
+    : {audioBitsPerSecond:32000};
 
   voiceChunks = [];
   voiceSpeechStarted = false;
@@ -1918,59 +1920,94 @@ async function playVoiceAudio(base64, fallbackText=""){
   }
 }
 
+async function postVoiceStage(payload){
+  const response = await fetch(VOICE_API_URL,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify(payload)
+  });
+
+  const raw = await response.text();
+  let data = {};
+
+  try{
+    data = raw ? JSON.parse(raw) : {};
+  }catch{
+    data = {error:raw || "Voice Mode returned an invalid response."};
+  }
+
+  if(!response.ok){
+    const stage = data.stage ? ` (${data.stage})` : "";
+    throw new Error((data.error || `Voice request failed (${response.status}).`) + stage);
+  }
+
+  return data;
+}
+
 async function sendVoiceTurn(blob){
   try{
     const audio = await blobToDataURL(blob);
     const mimeType = blob.type || "audio/mp4";
 
-    const response = await fetch(VOICE_API_URL,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        action:"turn",
-        audio,
-        mime_type:mimeType,
-        filename:`voice.${extensionForMime(mimeType)}`,
-        instructions:localStorage.getItem("lampai_instructions") || "",
-        history:voiceHistory.slice(-10)
-      })
+    setVoiceState("thinking","Hearing you","Transcribing");
+
+    const heard = await postVoiceStage({
+      action:"voice_transcribe",
+      audio,
+      mime_type:mimeType,
+      filename:`voice.${extensionForMime(mimeType)}`
     });
 
-    const raw = await response.text();
-    let data = {};
+    const transcript = cleanDisplayText(heard.transcript || "");
+
+    if(!transcript){
+      throw new Error("I couldn't hear any words. (transcribe)");
+    }
+
+    addVoiceLine(transcript,"user");
+
+    setVoiceState("thinking","Thinking","");
+
+    const answered = await postVoiceStage({
+      action:"voice_reply",
+      transcript,
+      instructions:localStorage.getItem("lampai_instructions") || "",
+      history:voiceHistory.slice(-10)
+    });
+
+    const reply = cleanDisplayText(answered.reply || "");
+
+    if(!reply){
+      throw new Error("LampAI returned no reply. (reply)");
+    }
+
+    voiceHistory.push({role:"user",content:transcript});
+    voiceHistory.push({role:"assistant",content:reply});
+    voiceHistory = voiceHistory.slice(-12);
+
+    addVoiceLine(reply,"ai");
+
+    setVoiceState("speaking","LampAI is speaking","");
+
+    let spoken = {audio:""};
 
     try{
-      data = raw ? JSON.parse(raw) : {};
-    }catch{
-      data = {error:raw || "Voice Mode returned an invalid response."};
+      spoken = await postVoiceStage({
+        action:"voice_speak",
+        speech_text:answered.speech_text || reply
+      });
+    }catch(error){
+      console.warn("Expressive TTS failed:",error);
     }
 
-    if(!response.ok){
-      throw new Error(data.error || `Voice request failed (${response.status}).`);
-    }
+    voiceLastAudio = spoken.audio || "";
 
-    const transcript = cleanDisplayText(data.transcript || "");
-    const reply = cleanDisplayText(data.reply || "");
-
-    if(transcript){
-      addVoiceLine(transcript,"user");
-      voiceHistory.push({role:"user",content:transcript});
-    }
-
-    if(reply){
-      addVoiceLine(reply,"ai");
-      voiceHistory.push({role:"assistant",content:reply});
-    }
-
-    voiceHistory = voiceHistory.slice(-12);
-    voiceLastAudio = data.audio || "";
-
-    if(reply && voiceActive){
-      setVoiceState("speaking","LampAI is speaking","");
-      await playVoiceAudio(voiceLastAudio,reply);
-    }
+    await playVoiceAudio(
+      voiceLastAudio,
+      reply
+    );
 
   }catch(error){
     addVoiceLine(
@@ -1985,7 +2022,7 @@ async function sendVoiceTurn(blob){
         if(voiceActive && !voiceBusy && !voiceMuted){
           startListening();
         }
-      },220);
+      },260);
     }
   }
 }
