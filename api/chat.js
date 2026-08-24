@@ -1,154 +1,34 @@
-const XAI_BASE_URL = "https://api.x.ai/v1";
 const MODEL = process.env.GROK_MODEL || "grok-4.6";
 
 function getApiKey() {
   return process.env.XAI_API_KEY || process.env.GROK_API_KEY || "";
 }
 
-function dataUrlToBlob(
-  dataUrl,
-  fallbackType = "application/octet-stream"
-) {
-  const match =
-    /^data:([^;,]+)?(;base64)?,(.*)$/s.exec(dataUrl || "");
-
-  if (!match) {
-    throw new Error("Invalid attachment data.");
-  }
-
-  const mimeType = match[1] || fallbackType;
-  const isBase64 = Boolean(match[2]);
-  const raw = match[3];
-
-  let bytes;
-
-  if (isBase64) {
-    bytes = Buffer.from(raw, "base64");
-  } else {
-    bytes = Buffer.from(
-      decodeURIComponent(raw),
-      "utf8"
-    );
-  }
-
-  return new Blob([bytes], {
-    type: mimeType
-  });
-}
-
-async function uploadFile(attachment, apiKey) {
-  let blob;
-
-  if (attachment.encoding === "data-url") {
-    blob = dataUrlToBlob(
-      attachment.content,
-      attachment.type
-    );
-  } else {
-    blob = new Blob(
-      [attachment.content || ""],
-      {
-        type: attachment.type || "text/plain"
-      }
-    );
-  }
-
-  const form = new FormData();
-
-  form.append("purpose", "assistants");
-
-  form.append(
-    "file",
-    blob,
-    attachment.name || "attachment"
-  );
-
-  const response = await fetch(
-    `${XAI_BASE_URL}/files`,
-    {
-      method: "POST",
-
-      headers: {
-        Authorization: `Bearer ${apiKey}`
-      },
-
-      body: form
-    }
-  );
-
-  const data =
-    await response
-      .json()
-      .catch(() => ({}));
-
-  if (!response.ok || !data.id) {
-    throw new Error(
-      data?.error?.message ||
-      data?.message ||
-      `File upload failed (${response.status}).`
-    );
-  }
-
-  return data.id;
-}
-
-async function deleteFile(fileId, apiKey) {
-  try {
-    await fetch(
-      `${XAI_BASE_URL}/files/${encodeURIComponent(fileId)}`,
-      {
-        method: "DELETE",
-
-        headers: {
-          Authorization: `Bearer ${apiKey}`
-        }
-      }
-    );
-  } catch {
-    // Ignore cleanup errors
-  }
-}
-
-function extractReply(data) {
-  if (
-    typeof data?.output_text === "string" &&
-    data.output_text.trim()
-  ) {
+function getReply(data) {
+  if (typeof data?.output_text === "string" && data.output_text.trim()) {
     return data.output_text.trim();
   }
 
-  const pieces = [];
+  const parts = [];
 
   for (const item of data?.output || []) {
-    for (const part of item?.content || []) {
+    for (const content of item?.content || []) {
       if (
-        typeof part?.text === "string" &&
-        part.text.trim()
+        content?.type === "output_text" &&
+        typeof content.text === "string"
       ) {
-        pieces.push(part.text.trim());
+        parts.push(content.text);
       }
     }
   }
 
-  return pieces.join("\n\n").trim();
+  return parts.join("\n\n").trim();
 }
 
 export default async function handler(req, res) {
-
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "*"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, OPTIONS"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type"
-  );
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
@@ -160,142 +40,184 @@ export default async function handler(req, res) {
     });
   }
 
-  const apiKey = getApiKey();
-
-  if (!apiKey) {
-    return res.status(500).json({
-      error:
-        "Missing XAI_API_KEY or GROK_API_KEY environment variable."
-    });
-  }
-
-  const {
-    message = "",
-    instructions = "",
-    attachments = []
-  } = req.body || {};
-
-  const cleanMessage =
-    String(message || "").trim();
-
-  const files =
-    Array.isArray(attachments)
-      ? attachments.slice(0, 5)
-      : [];
-
-  if (
-    !cleanMessage &&
-    files.length === 0
-  ) {
-    return res.status(400).json({
-      error:
-        "Missing message or attachment."
-    });
-  }
-
-  const customInstructions =
-    String(instructions || "").trim() ||
-    "Be helpful, intelligent, clear, and direct.";
-
-  const uploadedFileIds = [];
-
   try {
+    const apiKey = getApiKey();
 
-    const userContent = [];
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "Missing XAI_API_KEY in Vercel."
+      });
+    }
 
-    userContent.push({
-      type: "input_text",
+    const body =
+      typeof req.body === "string"
+        ? JSON.parse(req.body)
+        : req.body || {};
 
-      text:
-        cleanMessage ||
-        "Analyze the attached content and tell me what you see."
-    });
+    const message = String(body.message || "").trim();
+    const instructions = String(body.instructions || "").trim();
 
-    for (const attachment of files) {
+    const attachments =
+      Array.isArray(body.attachments)
+        ? body.attachments.slice(0, 5)
+        : [];
 
-      const type =
-        String(
-          attachment?.type || ""
-        );
+    if (!message && attachments.length === 0) {
+      return res.status(400).json({
+        error: "Send a message or attachment."
+      });
+    }
 
-      const content =
-        attachment?.content;
+    const content = [];
 
-      if (!content) continue;
+    if (message) {
+      content.push({
+        type: "input_text",
+        text: message
+      });
+    }
 
-      if (
-        type.startsWith("image/") ||
-        attachment?.kind === "image"
-      ) {
+    for (const file of attachments) {
+      const type = String(file?.type || "");
+      const name = String(file?.name || "attachment");
 
+      const data =
+        typeof file?.content === "string"
+          ? file.content
+          : "";
+
+      if (!data) continue;
+
+      // IMAGES
+      if (type.startsWith("image/")) {
         if (
-          !/^data:image\/(jpeg|jpg|png);base64,/i
-            .test(content)
+          !/^data:image\/(jpeg|jpg|png);base64,/i.test(data)
         ) {
-          throw new Error(
-            `${attachment?.name || "Image"} must be JPEG or PNG.`
-          );
+          return res.status(400).json({
+            error: `${name} must be a JPEG or PNG image.`
+          });
         }
 
-        userContent.push({
+        content.push({
           type: "input_image",
-          image_url: content,
+          image_url: data,
           detail: "high"
         });
 
         continue;
       }
 
-      const fileId =
-        await uploadFile(
-          attachment,
-          apiKey
-        );
+      // TEXT FILES
+      if (file?.encoding === "text") {
+        content.push({
+          type: "input_text",
+          text:
+            `\n\nAttached file: ${name}\n` +
+            `---\n${data}\n---`
+        });
 
-      uploadedFileIds.push(fileId);
+        continue;
+      }
 
-      userContent.push({
-        type: "input_file",
-        file_id: fileId
+      return res.status(400).json({
+        error:
+          `${name} is a binary document. ` +
+          `Text and images work right now; PDF/DOCX support comes next.`
       });
     }
 
-    const response = await fetch(
-      `${XAI_BASE_URL}/responses`,
+    if (content.length === 0) {
+      content.push({
+        type: "input_text",
+        text: "Hello"
+      });
+    }
+
+    const input = [];
+
+    if (instructions) {
+      input.push({
+        role: "system",
+        content: instructions
+      });
+    }
+
+    input.push({
+      role: "user",
+      content
+    });
+
+    const xaiResponse = await fetch(
+      "https://api.x.ai/v1/responses",
       {
         method: "POST",
 
         headers: {
-          "Content-Type":
-            "application/json",
-
-          Authorization:
-            `Bearer ${apiKey}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
         },
 
         body: JSON.stringify({
           model: MODEL,
-
           store: false,
-
-          input: [
-            {
-              role: "system",
-              content:
-                customInstructions
-            },
-
-            {
-              role: "user",
-              content:
-                userContent
-            }
-          ]
+          input
         })
       }
     );
 
-    const data =
-      await response
-        .json()
-        .
+    const raw = await xaiResponse.text();
+
+    let data = {};
+
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      data = { raw };
+    }
+
+    if (!xaiResponse.ok) {
+      console.error(
+        "xAI error:",
+        xaiResponse.status,
+        raw
+      );
+
+      return res.status(xaiResponse.status).json({
+        error:
+          data?.error?.message ||
+          data?.message ||
+          raw ||
+          `xAI request failed (${xaiResponse.status}).`
+      });
+    }
+
+    const reply = getReply(data);
+
+    if (!reply) {
+      console.error(
+        "No reply text from xAI:",
+        raw
+      );
+
+      return res.status(502).json({
+        error: "xAI returned no readable reply."
+      });
+    }
+
+    return res.status(200).json({
+      reply
+    });
+
+  } catch (error) {
+    console.error(
+      "LampAI function error:",
+      error
+    );
+
+    return res.status(500).json({
+      error:
+        error?.message ||
+        "Server error."
+    });
+  }
+}
