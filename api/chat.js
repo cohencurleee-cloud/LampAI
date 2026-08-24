@@ -31,10 +31,9 @@ function dataUrlToBlob(
     );
   }
 
-  return new Blob(
-    [bytes],
-    { type: mimeType }
-  );
+  return new Blob([bytes], {
+    type: mimeType
+  });
 }
 
 async function uploadFile(attachment, apiKey) {
@@ -49,19 +48,14 @@ async function uploadFile(attachment, apiKey) {
     blob = new Blob(
       [attachment.content || ""],
       {
-        type:
-          attachment.type ||
-          "text/plain"
+        type: attachment.type || "text/plain"
       }
     );
   }
 
   const form = new FormData();
 
-  form.append(
-    "purpose",
-    "assistants"
-  );
+  form.append("purpose", "assistants");
 
   form.append(
     "file",
@@ -75,8 +69,7 @@ async function uploadFile(attachment, apiKey) {
       method: "POST",
 
       headers: {
-        Authorization:
-          `Bearer ${apiKey}`
+        Authorization: `Bearer ${apiKey}`
       },
 
       body: form
@@ -107,13 +100,12 @@ async function deleteFile(fileId, apiKey) {
         method: "DELETE",
 
         headers: {
-          Authorization:
-            `Bearer ${apiKey}`
+          Authorization: `Bearer ${apiKey}`
         }
       }
     );
   } catch {
-    // Ignore cleanup errors.
+    // Ignore cleanup errors
   }
 }
 
@@ -133,9 +125,7 @@ function extractReply(data) {
         typeof part?.text === "string" &&
         part.text.trim()
       ) {
-        pieces.push(
-          part.text.trim()
-        );
+        pieces.push(part.text.trim());
       }
     }
   }
@@ -145,8 +135,6 @@ function extractReply(data) {
 
 export default async function handler(req, res) {
 
-  // Allows GitHub Pages to call
-  // your Vercel backend.
   res.setHeader(
     "Access-Control-Allow-Origin",
     "*"
@@ -163,9 +151,7 @@ export default async function handler(req, res) {
   );
 
   if (req.method === "OPTIONS") {
-    return res
-      .status(204)
-      .end();
+    return res.status(204).end();
   }
 
   if (req.method !== "POST") {
@@ -237,7 +223,6 @@ export default async function handler(req, res) {
 
       if (!content) continue;
 
-      // IMAGE
       if (
         type.startsWith("image/") ||
         attachment?.kind === "image"
@@ -261,7 +246,6 @@ export default async function handler(req, res) {
         continue;
       }
 
-      // FILE
       const fileId =
         await uploadFile(
           attachment,
@@ -276,7 +260,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // SEND EVERYTHING TO GROK
     const response = await fetch(
       `${XAI_BASE_URL}/responses`,
       {
@@ -315,55 +298,4 @@ export default async function handler(req, res) {
     const data =
       await response
         .json()
-        .catch(() => ({}));
-
-    if (!response.ok) {
-      return res
-        .status(response.status)
-        .json({
-          error:
-            data?.error?.message ||
-            data?.message ||
-            `Grok request failed (${response.status}).`
-        });
-    }
-
-    const reply =
-      extractReply(data);
-
-    if (!reply) {
-      return res.status(502).json({
-        error:
-          "Grok returned a response, but no readable text was found."
-      });
-    }
-
-    return res
-      .status(200)
-      .json({
-        reply
-      });
-
-  } catch (error) {
-
-    return res
-      .status(500)
-      .json({
-        error:
-          error?.message ||
-          "Something went wrong."
-      });
-
-  } finally {
-
-    await Promise.all(
-      uploadedFileIds.map(
-        fileId =>
-          deleteFile(
-            fileId,
-            apiKey
-          )
-      )
-    );
-  }
-}
+        .
