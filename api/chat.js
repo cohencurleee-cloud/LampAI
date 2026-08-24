@@ -1,4 +1,6 @@
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_URL =
+  "https://api.groq.com/openai/v1/chat/completions";
+
 const MODEL = "qwen/qwen3.6-27b";
 
 function cleanReply(text = "") {
@@ -40,12 +42,16 @@ export default async function handler(req, res) {
         ? JSON.parse(req.body)
         : req.body || {};
 
-    const message = String(body.message || "").trim();
-    const instructions = String(body.instructions || "").trim();
+    const message =
+      String(body.message || "").trim();
 
-    const attachments = Array.isArray(body.attachments)
-      ? body.attachments.slice(0, 5)
-      : [];
+    const instructions =
+      String(body.instructions || "").trim();
+
+    const attachments =
+      Array.isArray(body.attachments)
+        ? body.attachments.slice(0, 5)
+        : [];
 
     if (!message && attachments.length === 0) {
       return res.status(400).json({
@@ -63,28 +69,29 @@ export default async function handler(req, res) {
     }
 
     for (const file of attachments) {
-      const name = String(file?.name || "attachment");
-      const type = String(file?.type || "");
+      const name =
+        String(file?.name || "attachment");
+
+      const type =
+        String(file?.type || "");
 
       const content =
         typeof file?.content === "string"
           ? file.content
           : "";
 
-      if (!content) {
-        continue;
-      }
+      if (!content) continue;
 
       if (type.startsWith("image/")) {
         if (!content.startsWith("data:image/")) {
           return res.status(400).json({
-            error: `${name} could not be read as an image.`
+            error:
+              `${name} could not be read as an image.`
           });
         }
 
         userContent.push({
           type: "image_url",
-
           image_url: {
             url: content
           }
@@ -100,8 +107,9 @@ export default async function handler(req, res) {
       ) {
         userContent.push({
           type: "text",
-
-          text: `Attached file: ${name}\n\n${content}`
+          text:
+            `Attached file: ${name}\n\n` +
+            content
         });
 
         continue;
@@ -109,10 +117,9 @@ export default async function handler(req, res) {
 
       userContent.push({
         type: "text",
-
         text:
           `The user attached "${name}", but this file type cannot currently be read. ` +
-          `Tell them that briefly only if it matters to their question.`
+          `Mention that briefly only if it matters.`
       });
     }
 
@@ -123,11 +130,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const baseInstructions = `
+    const systemPrompt = `
 You are LampAI.
 
 Answer naturally like a normal person.
-
 Be concise and direct.
 
 For normal questions, usually answer in 1 to 4 short sentences.
@@ -135,21 +141,77 @@ For normal questions, usually answer in 1 to 4 short sentences.
 Do not reveal chain-of-thought, private reasoning, scratch work, or internal analysis.
 
 Never output <think> tags.
-
 Never describe hidden reasoning.
 
 Use plain text by default.
-
 Do not use markdown asterisks.
-
 Do not use bold formatting.
-
-Do not use markdown bullet lists unless the user clearly asks for a list.
+Do not use markdown bullet lists unless the user asks for a list.
 
 Do not repeat the user's question.
+Do not add unnecessary headings, summaries, disclaimers, or explanations.
 
-Do not add unnecessary sections, headings, disclaimers, or summaries.
+For image questions, answer what the user asked first.
+Do not write a giant image-analysis report unless requested.
 
-For image questions, identify or answer what the user asked first.
+${instructions ? `User customization:\n${instructions}` : ""}
+`;
 
-Do not write a long visual-analysis
+    const response = await fetch(
+      GROQ_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
+        },
+
+        body: JSON.stringify({
+          model: MODEL,
+
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt
+            },
+
+            {
+              role: "user",
+              content: userContent
+            }
+          ],
+
+          reasoning_effort: "none",
+          reasoning_format: "hidden",
+
+          temperature: 0.7,
+          top_p: 0.8,
+
+          max_completion_tokens: 700
+        })
+      }
+    );
+
+    const raw = await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      console.error(
+        "Groq error:",
+        response.status,
+        raw
+      );
+
+      return res.status(response.status).json({
+        error:
+          data?.error?.message ||
+          raw ||
+          `
