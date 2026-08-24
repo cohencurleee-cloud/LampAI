@@ -1,2019 +1,627 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07080a">
-<title>LampAI</title>
-
-<style>
-*{box-sizing:border-box}
-
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#07080a;
-  color:#f5f5f5;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
-}
-
-button,input,textarea{font:inherit}
-
-button{cursor:pointer}
-
-.app{
-  width:100%;
-  height:100dvh;
-  display:flex;
-  flex-direction:column;
-  background:
-    radial-gradient(circle at 50% -20%,rgba(255,255,255,.09),transparent 35%),
-    #07080a;
-}
-
-header{
-  height:62px;
-  flex-shrink:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  border-bottom:1px solid rgba(255,255,255,.07);
-  backdrop-filter:blur(20px);
-  background:rgba(7,8,10,.75);
-}
-
-.logo{
-  font-size:18px;
-  font-weight:700;
-  letter-spacing:-.4px;
-}
-
-.logo-dot{
-  display:inline-block;
-  width:8px;
-  height:8px;
-  margin-right:7px;
-  border-radius:50%;
-  background:#fff;
-  box-shadow:0 0 14px rgba(255,255,255,.8);
-}
-
-.header-button{
-  position:absolute;
-  width:42px;
-  height:42px;
-  border:0;
-  border-radius:50%;
-  background:rgba(255,255,255,.07);
-  color:#ddd;
-  display:grid;
-  place-items:center;
-  font-size:18px;
-}
-
-.header-button:active{
-  transform:scale(.92);
-}
-
-#newChat{
-  left:14px;
-}
-
-#settingsButton{
-  right:14px;
-}
-
-#chat{
-  flex:1;
-  overflow-y:auto;
-  overscroll-behavior:contain;
-  padding:24px 16px 150px;
-  scroll-behavior:smooth;
-}
-
-#chat::-webkit-scrollbar{
-  display:none;
-}
-
-.welcome{
-  min-height:70%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:20px;
-}
-
-.lamp{
-  width:74px;
-  height:74px;
-  border-radius:24px;
-  display:grid;
-  place-items:center;
-  font-size:36px;
-  margin-bottom:22px;
-  background:linear-gradient(145deg,#ffffff,#9da3aa);
-  color:#08090a;
-  box-shadow:
-    0 0 35px rgba(255,255,255,.13),
-    inset 0 1px 1px rgba(255,255,255,.8);
-}
-
-.welcome h1{
-  margin:0;
-  font-size:31px;
-  letter-spacing:-1.3px;
-}
-
-.welcome p{
-  margin:9px 0 0;
-  color:#777d86;
-  font-size:15px;
-}
-
-.suggestions{
-  width:100%;
-  max-width:520px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:9px;
-  margin-top:30px;
-}
-
-.suggestion{
-  text-align:left;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.045);
-  color:#ddd;
-  border-radius:16px;
-  padding:14px;
-  transition:.18s;
-}
-
-.suggestion:active{
-  transform:scale(.97);
-  background:rgba(255,255,255,.09);
-}
-
-.message{
-  width:min(820px,100%);
-  margin:0 auto 18px;
-  display:flex;
-  animation:appear .22s ease;
-}
-
-@keyframes appear{
-  from{opacity:0;transform:translateY(7px)}
-  to{opacity:1;transform:none}
-}
-
-.message.user{
-  justify-content:flex-end;
-}
-
-.bubble{
-  max-width:86%;
-  padding:12px 15px;
-  border-radius:20px;
-  line-height:1.5;
-  font-size:15px;
-  white-space:pre-wrap;
-}
-
-.user .bubble{
-  background:#f1f1f1;
-  color:#090909;
-  border-bottom-right-radius:6px;
-}
-
-.ai .bubble{
-  color:#e8e8e8;
-  background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.07);
-  border-bottom-left-radius:6px;
-}
-
-.thinking{
-  color:#777d86!important;
-  display:flex;
-  align-items:center;
-  gap:5px;
-  min-width:58px;
-}
-
-.thinking-dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:#777d86;
-  opacity:.28;
-  animation:thinkingPulse 1s infinite ease-in-out;
-}
-
-.thinking-dot:nth-child(2){animation-delay:.15s}
-.thinking-dot:nth-child(3){animation-delay:.30s}
-
-@keyframes thinkingPulse{
-  0%,80%,100%{opacity:.25;transform:translateY(0)}
-  40%{opacity:1;transform:translateY(-3px)}
-}
-
-.bottom{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  z-index:10;
-  padding:8px 12px calc(8px + env(safe-area-inset-bottom));
-  background:linear-gradient(transparent,#07080a 28%);
-}
-
-.composer{
-  width:min(820px,100%);
-  margin:auto;
-  min-height:64px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:9px 10px 9px 12px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:25px;
-  background:rgba(20,21,24,.94);
-  backdrop-filter:blur(25px);
-  box-shadow:0 12px 40px rgba(0,0,0,.4);
-}
-
-#input{
-  min-width:0;
-  flex:1;
-  border:0;
-  outline:0;
-  background:transparent;
-  color:white;
-  font-size:17px;
-}
-
-#input::placeholder{
-  color:#656a72;
-}
-
-.icon{
-  width:38px;
-  height:38px;
-  flex-shrink:0;
-  border:0;
-  border-radius:50%;
-  background:transparent;
-  color:#9298a1;
-  font-size:20px;
-}
-
-.send{
-  width:44px;
-  height:44px;
-  flex-shrink:0;
-  border:0;
-  border-radius:50%;
-  background:#fff;
-  color:#000;
-  font-size:17px;
-  font-weight:800;
-}
-
-.send:disabled{
-  opacity:.35;
-}
-
-.disclaimer{
-  text-align:center;
-  color:#4d5259;
-  font-size:10px;
-  margin-top:6px;
-}
-
-
-/* VOICE MODE */
-
-.voice-mode{
-  position:fixed;
-  inset:0;
-  z-index:90;
-  display:none;
-  flex-direction:column;
-  background:
-    radial-gradient(circle at 50% 42%,rgba(255,255,255,.07),transparent 30%),
-    #07080a;
-  color:#f5f5f5;
-}
-
-.voice-mode.open{
-  display:flex;
-}
-
-.voice-header{
-  height:62px;
-  flex-shrink:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  border-bottom:1px solid rgba(255,255,255,.07);
-  background:rgba(7,8,10,.82);
-  backdrop-filter:blur(20px);
-}
-
-.voice-title{
-  font-size:17px;
-  font-weight:700;
-}
-
-.voice-back{
-  position:absolute;
-  left:14px;
-  width:40px;
-  height:40px;
-  border:0;
-  border-radius:50%;
-  background:rgba(255,255,255,.07);
-  color:#eee;
-  font-size:23px;
-  line-height:1;
-}
-
-.voice-feed{
-  flex:1;
-  overflow-y:auto;
-  width:min(760px,100%);
-  margin:auto;
-  padding:26px 16px 210px;
-}
-
-.voice-feed::-webkit-scrollbar{
-  display:none;
-}
-
-.voice-empty{
-  min-height:55%;
-  display:grid;
-  place-items:center;
-  text-align:center;
-  color:#777d86;
-  font-size:15px;
-  padding:30px;
-}
-
-.voice-row{
-  display:flex;
-  margin:0 0 14px;
-}
-
-.voice-row.user{
-  justify-content:flex-end;
-}
-
-.voice-bubble{
-  max-width:84%;
-  padding:11px 14px;
-  border-radius:18px;
-  font-size:15px;
-  line-height:1.45;
-}
-
-.voice-row.user .voice-bubble{
-  background:#f1f1f1;
-  color:#090909;
-  border-bottom-right-radius:6px;
-}
-
-.voice-row.ai .voice-bubble{
-  background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.07);
-  color:#eee;
-  border-bottom-left-radius:6px;
-}
-
-.voice-stage{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  padding:28px 18px calc(24px + env(safe-area-inset-bottom));
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  background:linear-gradient(transparent,#07080a 22%);
-}
-
-.voice-status{
-  min-height:22px;
-  margin-bottom:15px;
-  color:#9298a1;
-  font-size:14px;
-  text-align:center;
-}
-
-.voice-orb{
-  width:92px;
-  height:92px;
-  display:grid;
-  place-items:center;
-  border:1px solid rgba(255,255,255,.13);
-  border-radius:50%;
-  background:
-    radial-gradient(circle at 35% 30%,#fff,#b9bec5 32%,#4c5158 70%,#202328);
-  color:#060708;
-  font-size:34px;
-  box-shadow:
-    0 0 0 10px rgba(255,255,255,.035),
-    0 14px 50px rgba(0,0,0,.5);
-  transition:transform .18s ease,box-shadow .18s ease;
-}
-
-.voice-orb:active{
-  transform:scale(.94);
-}
-
-.voice-orb.recording{
-  animation:voicePulse 1.15s infinite ease-in-out;
-  box-shadow:
-    0 0 0 12px rgba(255,255,255,.04),
-    0 0 45px rgba(255,255,255,.14);
-}
-
-.voice-orb.busy{
-  opacity:.6;
-}
-
-@keyframes voicePulse{
-  0%,100%{transform:scale(1)}
-  50%{transform:scale(1.07)}
-}
-
-.voice-hint{
-  margin-top:13px;
-  color:#555b63;
-  font-size:11px;
-  text-align:center;
-}
-
-.voice-replay{
-  margin-top:10px;
-  height:34px;
-  padding:0 13px;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:11px;
-  background:rgba(255,255,255,.05);
-  color:#aaa;
-  font-size:12px;
-}
-
-@media(max-width:600px){
-  .voice-header{height:58px}
-  .voice-feed{padding-left:12px;padding-right:12px}
-  .voice-bubble{max-width:90%}
-  .voice-orb{width:88px;height:88px}
-}
-
-/* SETTINGS */
-
-.overlay{
-  position:fixed;
-  inset:0;
-  z-index:50;
-  display:none;
-  align-items:flex-end;
-  justify-content:center;
-  background:rgba(0,0,0,.65);
-  backdrop-filter:blur(7px);
-}
-
-.overlay.open{
-  display:flex;
-}
-
-.settings{
-  width:100%;
-  max-width:600px;
-  max-height:88dvh;
-  overflow:auto;
-  background:#111317;
-  border:1px solid rgba(255,255,255,.09);
-  border-bottom:0;
-  border-radius:28px 28px 0 0;
-  padding:18px 18px calc(24px + env(safe-area-inset-bottom));
-  animation:sheet .25s ease;
-}
-
-@keyframes sheet{
-  from{transform:translateY(100%)}
-  to{transform:none}
-}
-
-.handle{
-  width:38px;
-  height:4px;
-  border-radius:10px;
-  background:#41454b;
-  margin:0 auto 20px;
-}
-
-.settings h2{
-  margin:0;
-  font-size:22px;
-}
-
-.settings p{
-  color:#777d86;
-  font-size:14px;
-  line-height:1.45;
-}
-
-textarea{
-  width:100%;
-  min-height:145px;
-  resize:none;
-  padding:14px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.09);
-  outline:0;
-  background:#090a0c;
-  color:#fff;
-  font-size:15px;
-  line-height:1.45;
-}
-
-textarea:focus{
-  border-color:rgba(255,255,255,.25);
-}
-
-.actions{
-  display:flex;
-  gap:8px;
-  margin-top:12px;
-}
-
-.actions button{
-  flex:1;
-  height:48px;
-  border-radius:14px;
-  border:0;
-}
-
-.cancel{
-  background:#22252a;
-  color:#ddd;
-}
-
-.save{
-  background:#fff;
-  color:#000;
-  font-weight:700;
-}
-
-
-/* AUTH */
-.auth-overlay{
-  position:fixed;
-  inset:0;
-  z-index:100;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  background:rgba(0,0,0,.78);
-  backdrop-filter:blur(12px);
-}
-.auth-overlay.open{display:flex}
-.auth-card{
-  width:min(420px,100%);
-  background:#111317;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:24px;
-  padding:24px;
-  box-shadow:0 20px 70px rgba(0,0,0,.55);
-}
-.auth-card h2{
-  margin:0 0 7px;
-  font-size:25px;
-}
-.auth-card p{
-  margin:0 0 20px;
-  color:#777d86;
-  font-size:14px;
-  line-height:1.45;
-}
-.auth-field{
-  width:100%;
-  height:50px;
-  margin-top:10px;
-  padding:0 14px;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:14px;
-  outline:0;
-  background:#090a0c;
-  color:#fff;
-}
-.auth-field:focus{border-color:rgba(255,255,255,.3)}
-.auth-submit{
-  width:100%;
-  height:50px;
-  margin-top:14px;
-  border:0;
-  border-radius:14px;
-  background:#fff;
-  color:#000;
-  font-weight:700;
-}
-.auth-google{
-  width:100%;
-  height:50px;
-  margin-top:10px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;
-  background:#1b1d21;
-  color:#fff;
-  font-weight:600;
-}
-.auth-divider{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin:14px 0 2px;
-  color:#666b73;
-  font-size:12px;
-}
-.auth-divider::before,.auth-divider::after{
-  content:"";
-  height:1px;
-  flex:1;
-  background:rgba(255,255,255,.08);
-}
-.auth-switch{
-  width:100%;
-  margin-top:13px;
-  border:0;
-  background:transparent;
-  color:#aaa;
-  font-size:13px;
-}
-.auth-close{
-  float:right;
-  width:32px;
-  height:32px;
-  border:0;
-  border-radius:50%;
-  background:rgba(255,255,255,.07);
-  color:#ddd;
-}
-.auth-status{
-  min-height:20px;
-  margin-top:10px;
-  color:#aaa;
-  font-size:13px;
-  text-align:center;
-}
-
-
-.account-section{margin:0 0 24px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(255,255,255,.035)}.account-row{display:flex;align-items:center;gap:12px}.account-avatar{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#24272c;overflow:hidden}.account-avatar img{width:44px;height:44px;border-radius:50%;object-fit:cover}.account-info{min-width:0;display:flex;flex-direction:column;gap:3px}.account-info strong,.account-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-info strong{font-size:14px}.account-info span{font-size:12px;color:#777d86}.account-button{width:100%;height:44px;margin-top:12px;border:0;border-radius:13px;background:#fff;color:#000;font-weight:700}
-
-/* ATTACHMENTS */
-
-.attachments{
-  width:min(820px,100%);
-  margin:0 auto 8px;
-  padding:0 2px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  align-items:flex-end;
-}
-
-.attachment-preview{
-  position:relative;
-  flex:0 0 auto;
-}
-
-.image-preview{
-  width:76px;
-  height:76px;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:15px;
-  background:#15171a;
-}
-
-.image-preview img{
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:cover;
-}
-
-.file-preview{
-  max-width:220px;
-  height:42px;
-  display:flex;
-  align-items:center;
-  padding:0 34px 0 12px;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:12px;
-  background:#17191d;
-  color:#ddd;
-  font-size:12px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.remove-attachment{
-  position:absolute;
-  top:-6px;
-  right:-6px;
-  width:22px;
-  height:22px;
-  display:grid;
-  place-items:center;
-  padding:0;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:50%;
-  background:#2a2d32;
-  color:#fff;
-  font-size:14px;
-  line-height:1;
-}
-
-#attachMenu{
-  position:absolute;
-  left:max(12px,calc(50% - 410px));
-  bottom:82px;
-  z-index:25;
-  display:none;
-  width:126px;
-  padding:5px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:12px;
-  background:#17191d;
-  box-shadow:0 12px 36px rgba(0,0,0,.5);
-}
-
-#attachMenu.open{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
-.attach-option{
-  width:100%;
-  height:35px;
-  padding:0 9px;
-  border:0;
-  border-radius:8px;
-  background:transparent;
-  color:#e5e5e5;
-  font-size:13px;
-  text-align:left;
-}
-
-.attach-option:active{
-  background:rgba(255,255,255,.08);
-}
-
-/* Sent attachment previews */
-.sent-attachments{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  margin-bottom:8px;
-}
-
-.sent-image{
-  width:min(220px,58vw);
-  max-height:220px;
-  display:block;
-  object-fit:cover;
-  border-radius:13px;
-}
-
-.sent-file{
-  max-width:240px;
-  padding:8px 10px;
-  border-radius:10px;
-  background:rgba(0,0,0,.12);
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  font-size:12px;
-}
-
-.user-text{
-  white-space:pre-wrap;
-}
-
-/* PHONE */
-
-@media(max-width:600px){
-  header{
-    height:58px;
-  }
-
-  .welcome{
-    min-height:65%;
-  }
-
-  .lamp{
-    width:66px;
-    height:66px;
-    border-radius:21px;
-    font-size:31px;
-  }
-
-  .welcome h1{
-    font-size:28px;
-  }
-
-  .suggestions{
-    grid-template-columns:1fr;
-    max-width:390px;
-  }
-
-  .suggestion{
-    padding:13px;
-  }
-
-  .bubble{
-    max-width:90%;
-  }
-
-  #chat{
-    padding-left:12px;
-    padding-right:12px;
-  }
-
-  .image-preview{
-    width:68px;
-    height:68px;
-  }
-
-  #attachMenu{
-    left:12px;
-  }
-
-  .composer{
-    min-height:62px;
-  }
-
-}
-</style>
-</head>
-
-<body>
-
-<div class="app">
-
-<header>
-  <button class="header-button" id="newChat">+</button>
-
-  <div class="logo">
-    <span class="logo-dot"></span>
-    LampAI
-  </div>
-
-  <button class="header-button" id="settingsButton">⚙</button>
-</header>
-
-<div id="chat">
-
-  <div class="welcome">
-
-    <div class="lamp">L</div>
-
-    <h1>What can I help with?</h1>
-
-    <p>Ask me anything.</p>
-
-    <div class="suggestions">
-
-      <button class="suggestion" data-text="Give me some good ideas for a project">
-        Give me ideas
-      </button>
-
-      <button class="suggestion" data-text="Explain something complicated in simple words">
-        Explain something
-      </button>
-
-      <button class="suggestion" data-text="Help me solve a problem">
-        Help me solve something
-      </button>
-
-      <button class="suggestion" data-text="Write something creative for me">
-        Create something
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-
-<div class="bottom">
-  <div class="attachments" id="attachments"></div>
-  <div id="attachMenu">
-    <button type="button" class="attach-option" id="imageOption">Add image</button>
-    <button type="button" class="attach-option" id="fileOption">Add file</button>
-  </div>
-  <input id="imageInput" type="file" accept="image/*" multiple hidden>
-  <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.pdf,.doc,.docx" multiple hidden>
-
-  <form class="composer" id="form">
-
-    <button type="button" class="icon" id="attach">+</button>
-
-    <input
-      id="input"
-      type="text"
-      placeholder="Message LampAI..."
-      autocomplete="off"
-      enterkeyhint="send"
-    >
-
-    <button type="button" class="icon" id="micButton" aria-label="Voice input">🎙</button>
-
-    <button class="send" id="send" type="submit">↑</button>
-
-  </form>
-
-  <div class="disclaimer">
-    LampAI can make mistakes. Check important information.
-  </div>
-
-</div>
-
-</div>
-
-
-
-
-<!-- VOICE MODE -->
-<div class="voice-mode" id="voiceMode" aria-hidden="true">
-  <div class="voice-header">
-    <button type="button" class="voice-back" id="voiceBack" aria-label="Back to chat">‹</button>
-    <div class="voice-title">Voice</div>
-  </div>
-
-  <div class="voice-feed" id="voiceFeed">
-    <div class="voice-empty" id="voiceEmpty">
-      Tap the mic and talk to LampAI.
-    </div>
-  </div>
-
-  <div class="voice-stage">
-    <div class="voice-status" id="voiceStatus">Tap to talk</div>
-    <button type="button" class="voice-orb" id="voiceTalk" aria-label="Start talking">🎙</button>
-    <button type="button" class="voice-replay" id="voiceReplay" hidden>Replay reply</button>
-    <div class="voice-hint">Tap again when you're done</div>
-  </div>
-</div>
-
-<!-- AUTH -->
-<div class="auth-overlay" id="authOverlay">
-  <div class="auth-card">
-    <button class="auth-close" id="authClose">×</button>
-    <h2 id="authTitle">Sign in to LampAI</h2>
-    <p id="authDescription">Sign in to keep your LampAI account and settings.</p>
-
-    <input class="auth-field" id="authEmail" type="email" placeholder="Email" autocomplete="email">
-    <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
-
-    <button class="auth-google" id="googleAuth">Continue with Google</button>
-
-    <div class="auth-divider">or</div>
-
-    <button class="auth-submit" id="authSubmit">Sign In</button>
-    <button class="auth-switch" id="authSwitch">Need an account? Sign Up</button>
-    <div class="auth-status" id="authStatus"></div>
-  </div>
-</div>
-
-<!-- SETTINGS -->
-
-<div class="overlay" id="overlay">
-
-  <div class="settings">
-
-    <div class="handle"></div>
-
-    <div class="account-section"><div class="account-row"><div class="account-avatar" id="accountAvatar">👤</div><div class="account-info"><strong id="accountName">Not signed in</strong><span id="accountEmail">Sign in to use your account</span></div></div><button class="account-button" id="accountButton">Sign In</button></div><h2>Customize LampAI</h2>
-
-    <p>
-      Tell LampAI how you want it to talk and behave.
-      Keep it simple. You can change this whenever you want.
-    </p>
-
-    <textarea
-      id="instructions"
-      placeholder="Example: Talk naturally, keep answers short, be funny and sarcastic. Don't use emojis unless I use them."
-    ></textarea>
-
-    <div class="actions">
-
-      <button class="cancel" id="cancel">Cancel</button>
-
-      <button class="save" id="save">Save</button>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASE_URL = "https://oovmpejryqkyvcvpwncg.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_PYK6F-mlPtkpBZvwW0_tfg_EJlatxqy";
-
-const { createClient } = supabase;
-const supabaseClient = createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-const authOverlay = document.getElementById("authOverlay");
-const authButton = document.getElementById("authButton");
-const authClose = document.getElementById("authClose");
-const authTitle = document.getElementById("authTitle");
-const authDescription = document.getElementById("authDescription");
-const authEmail = document.getElementById("authEmail");
-const authPassword = document.getElementById("authPassword");
-const authSubmit = document.getElementById("authSubmit");
-const authSwitch = document.getElementById("authSwitch");
-const authStatus = document.getElementById("authStatus");
-
-let authMode = "signin";
-
-function openAuth(mode = "signin") {
-  authMode = mode;
-  authTitle.textContent = mode === "signin"
-    ? "Sign in to LampAI"
-    : "Create your LampAI account";
-  authDescription.textContent = mode === "signin"
-    ? "Sign in to keep your LampAI account and settings."
-    : "Create an account with your email and password.";
-  authSubmit.textContent = mode === "signin" ? "Sign In" : "Sign Up";
-  authSwitch.textContent = mode === "signin"
-    ? "Need an account? Sign Up"
-    : "Already have an account? Sign In";
-  authStatus.textContent = "";
-  authOverlay.classList.add("open");
-  setTimeout(() => authEmail.focus(), 50);
-}
-
-function closeAuth() {
-  authOverlay.classList.remove("open");
-  authStatus.textContent = "";
-}
-
-const accountButton=document.getElementById("accountButton");const accountName=document.getElementById("accountName");const accountEmail=document.getElementById("accountEmail");const accountAvatar=document.getElementById("accountAvatar");async function updateAccountUI(session){if(session?.user){const email=session.user.email||"Signed in";accountName.textContent=session.user.user_metadata?.full_name||session.user.user_metadata?.name||email.split("@")[0];accountEmail.textContent=email;accountButton.textContent="Sign Out";const avatar=session.user.user_metadata?.avatar_url||session.user.user_metadata?.picture;accountAvatar.innerHTML=avatar?`<img src="${avatar}" alt="">`:"👤";}else{accountName.textContent="Not signed in";accountEmail.textContent="Sign in to use your account";accountButton.textContent="Sign In";accountAvatar.textContent="👤";}}accountButton.onclick=async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session){await supabaseClient.auth.signOut();updateAccountUI(null);}else openAuth("signin");};
-
-authClose.onclick = closeAuth;
-
-authOverlay.addEventListener("click", e => {
-  if (e.target === authOverlay) closeAuth();
-});
-
-authSwitch.onclick = () => {
-  openAuth(authMode === "signin" ? "signup" : "signin");
-};
-
-document.getElementById("googleAuth").onclick = async () => {
-  authStatus.textContent = "Opening Google...";
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: "https://cohencurleee-cloud.github.io/LAMPAI/"
-    }
-  });
-
-  if (error) {
-    authStatus.textContent = error.message || "Google sign-in failed.";
-  }
-};
-
-authSubmit.onclick = async () => {
-  const email = authEmail.value.trim();
-  const password = authPassword.value;
-
-  if (!email || !password) {
-    authStatus.textContent = "Enter your email and password.";
-    return;
-  }
-
-  if (password.length < 6) {
-    authStatus.textContent = "Password must be at least 6 characters.";
-    return;
-  }
-
-  authSubmit.disabled = true;
-  authStatus.textContent = authMode === "signin"
-    ? "Signing in..."
-    : "Creating account...";
-
-  try {
-    let result;
-
-    if (authMode === "signin") {
-      result = await supabaseClient.auth.signInWithPassword({
-        email,
-        password
-      });
-    } else {
-      result = await supabaseClient.auth.signUp({
-        email,
-        password
-      });
-    }
-
-    if (result.error) throw result.error;
-
-    if (authMode === "signup" && !result.data.session) {
-      authStatus.textContent =
-        "Account created. Check your email to confirm your account.";
-      return;
-    }
-
-    authStatus.textContent = "You're signed in.";
-    authOverlay.classList.remove("open");
-    authEmail.value = "";
-    authPassword.value = "";
-  } catch (error) {
-    authStatus.textContent = error.message || "Authentication failed.";
-  } finally {
-    authSubmit.disabled = false;
-  }
-};
-
-supabaseClient.auth.onAuthStateChange((event, session) => { updateAccountUI(session); });
-
-// Require a signed-in user before using LampAI.
-(async () => {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-
-  updateAccountUI(session);
-  if (!session) openAuth("signin");
-})();
-</script>
-
-<script>
-
-// If the HTML is hosted on Vercel with /api/chat, leave this as-is.
-// If the HTML is hosted on GitHub Pages, set this to your FULL Vercel URL,
-// for example: "https://your-project.vercel.app/api/chat".
-const CHAT_API_URL = "/api/chat";
-const VOICE_API_URL = CHAT_API_URL.replace(/\/api\/chat(?:\?.*)?$/, "/api/voice");
-
-const chat = document.getElementById("chat");
-const input = document.getElementById("input");
-const form = document.getElementById("form");
-const send = document.getElementById("send");
-const overlay = document.getElementById("overlay");
-const instructions = document.getElementById("instructions");
-const attach = document.getElementById("attach");
-const attachMenu = document.getElementById("attachMenu");
-const imageInput = document.getElementById("imageInput");
-const fileInput = document.getElementById("fileInput");
-const attachmentsEl = document.getElementById("attachments");
-let selectedAttachments = [];
-
-attach.onclick = e => { e.stopPropagation(); attachMenu.classList.toggle("open"); };
-document.getElementById("imageOption").onclick = () => { attachMenu.classList.remove("open"); imageInput.click(); };
-document.getElementById("fileOption").onclick = () => { attachMenu.classList.remove("open"); fileInput.click(); };
-document.addEventListener("click", e => { if (!attachMenu.contains(e.target) && e.target !== attach) attachMenu.classList.remove("open"); });
-function renderAttachments(){
-  attachmentsEl.innerHTML = "";
-
-  selectedAttachments.forEach((file,i) => {
-    const preview = document.createElement("div");
-    preview.className = "attachment-preview " + (file.type.startsWith("image/") ? "image-preview" : "file-preview");
-
-    if(file.type.startsWith("image/")){
-      const img = document.createElement("img");
-      const url = URL.createObjectURL(file);
-      img.src = url;
-      img.alt = file.name;
-      img.onload = () => URL.revokeObjectURL(url);
-      preview.appendChild(img);
-    }else{
-      preview.title = file.name;
-      preview.appendChild(document.createTextNode(file.name));
-    }
-
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "remove-attachment";
-    remove.textContent = "×";
-    remove.setAttribute("aria-label", `Remove ${file.name}`);
-    remove.onclick = () => {
-      selectedAttachments.splice(i,1);
-      renderAttachments();
-    };
-
-    preview.appendChild(remove);
-    attachmentsEl.appendChild(preview);
-  });
-}
-
-function addFiles(files){
-  for(const file of files){
-    if(selectedAttachments.length >= 5) break;
-
-    const duplicate = selectedAttachments.some(
-      x => x.name === file.name && x.size === file.size && x.lastModified === file.lastModified
-    );
-
-    if(file.size > 3.2 * 1024 * 1024){
-      alert(`${file.name} is too large. Keep each attachment under about 3 MB for this web build.`);
-      continue;
-    }
-
-    if(!duplicate) selectedAttachments.push(file);
-  }
-
-  renderAttachments();
-}
-
-async function normalizeImageFile(file){
-  // Grok vision accepts JPEG/PNG. This also shrinks huge phone photos
-  // so the JSON request doesn't get wrecked by serverless body limits.
-  try{
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-
-    await new Promise((resolve,reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-      img.src = url;
-    });
-
-    const maxSide = 1600;
-    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-    const width = Math.max(1, Math.round(img.naturalWidth * scale));
-    const height = Math.max(1, Math.round(img.naturalHeight * scale));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, width, height);
-    URL.revokeObjectURL(url);
-
-    const blob = await new Promise(resolve =>
-      canvas.toBlob(resolve, "image/jpeg", 0.84)
-    );
-
-    if(!blob) return file;
-
-    const cleanName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-    return new File([blob], cleanName, {
-      type: "image/jpeg",
-      lastModified: Date.now()
-    });
-  }catch{
-    return file;
-  }
-}
-
-imageInput.onchange = async e => {
-  const picked = [...e.target.files];
-  imageInput.value = "";
-
-  const normalized = [];
-  for(const file of picked){
-    normalized.push(await normalizeImageFile(file));
-  }
-
-  addFiles(normalized);
-};
-
-fileInput.onchange = e => {
-  addFiles([...e.target.files]);
-  fileInput.value = "";
-};
-
-function fileToDataURL(file){
-  return new Promise((resolve,reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
-}
-
-function isTextFile(file){
-  return file.type.startsWith("text/") ||
-    /\.(txt|md|csv|json)$/i.test(file.name);
-}
-
-async function serializeAttachment(file){
-  const textFile = isTextFile(file);
-
-  return {
-    name: file.name,
-    type: file.type || "application/octet-stream",
-    size: file.size,
-    kind: file.type.startsWith("image/") ? "image" : "file",
-    encoding: textFile ? "text" : "data-url",
-    content: textFile ? await file.text() : await fileToDataURL(file)
-  };
-}
-
-
-instructions.value =
-  localStorage.getItem("lampai_instructions") || "";
-
-
-document.getElementById("settingsButton").onclick = () => {
-  overlay.classList.add("open");
-};
-
-document.getElementById("cancel").onclick = () => {
-  overlay.classList.remove("open");
-};
-
-document.getElementById("save").onclick = () => {
-
-  localStorage.setItem(
-    "lampai_instructions",
-    instructions.value.trim()
-  );
-
-  overlay.classList.remove("open");
-};
-
-
-overlay.addEventListener("click", e => {
-
-  if(e.target === overlay){
-    overlay.classList.remove("open");
-  }
-
-});
-
-
-document.getElementById("newChat").onclick = () => {
-
-  chat.innerHTML = `
-    <div class="welcome">
-
-      <div class="lamp">L</div>
-
-      <h1>What can I help with?</h1>
-
-      <p>Ask me anything.</p>
-
-      <div class="suggestions">
-
-        <button class="suggestion" data-text="Give me some good ideas for a project">
-          Give me ideas
-        </button>
-
-        <button class="suggestion" data-text="Explain something complicated in simple words">
-          Explain something
-        </button>
-
-        <button class="suggestion" data-text="Help me solve a problem">
-          Help me solve something
-        </button>
-
-        <button class="suggestion" data-text="Write something creative for me">
-          Create something
-        </button>
-
-      </div>
-
-    </div>
-  `;
-
-  activateSuggestions();
-
-};
-
-
-function activateSuggestions(){
-
-  document.querySelectorAll(".suggestion").forEach(button => {
-
-    button.onclick = () => {
-
-      input.value = button.dataset.text;
-
-      input.focus();
-
-    };
-
-  });
-
-}
-
-
-activateSuggestions();
-
-
-function addMessage(text,type){
-
-  const wrapper = document.createElement("div");
-
-  wrapper.className = "message " + type;
-
-  const bubble = document.createElement("div");
-
-  bubble.className = "bubble";
-
-  bubble.textContent = text;
-
-  wrapper.appendChild(bubble);
-
-  chat.appendChild(wrapper);
-
-  chat.scrollTop = chat.scrollHeight;
-
-  return wrapper;
-
-}
-
-
-
-function addThinkingMessage(){
-  const wrapper = document.createElement("div");
-  wrapper.className = "message ai";
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble thinking";
-
-  for(let i = 0; i < 3; i++){
-    const dot = document.createElement("span");
-    dot.className = "thinking-dot";
-    bubble.appendChild(dot);
-  }
-
-  wrapper.appendChild(bubble);
-  chat.appendChild(wrapper);
-  chat.scrollTop = chat.scrollHeight;
-
-  return wrapper;
-}
-
-function cleanDisplayText(text = ""){
+const GROQ_BASE = "https://api.groq.com/openai/v1";
+const CHAT_MODEL = "qwen/qwen3.6-27b";
+const STT_MODEL = "whisper-large-v3-turbo";
+const TTS_MODEL = "canopylabs/orpheus-v1-english";
+const TTS_VOICE = "troy";
+
+function cleanReply(text = "") {
   return String(text)
     .replace(/<think>[\s\S]*?<\/think>/gi, "")
     .replace(/<think>[\s\S]*/gi, "")
     .replace(/\*\*/g, "")
-    .replace(/^\s*\*\s+/gm, "")
+    .replace(/\*/g, "")
     .trim();
 }
 
-function typeAIMessage(text){
-  const cleaned = cleanDisplayText(text);
+function dataUrlToBlob(
+  dataUrl,
+  fallbackType = "audio/mp4"
+) {
+  const match =
+    /^data:([^;,]+)?(;base64)?,(.*)$/s.exec(
+      dataUrl || ""
+    );
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "message ai";
+  if (!match) {
+    throw new Error(
+      "Invalid microphone audio."
+    );
+  }
 
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
+  const mimeType =
+    match[1] || fallbackType;
 
-  wrapper.appendChild(bubble);
-  chat.appendChild(wrapper);
+  const isBase64 =
+    Boolean(match[2]);
 
-  const chunks = cleaned.match(/\S+\s*/g) || [cleaned];
-  let index = 0;
+  const raw =
+    match[3];
 
-  const timer = setInterval(() => {
-    if(index >= chunks.length){
-      clearInterval(timer);
-      return;
+  const bytes =
+    isBase64
+      ? Buffer.from(raw, "base64")
+      : Buffer.from(
+          decodeURIComponent(raw),
+          "utf8"
+        );
+
+  return new Blob(
+    [bytes],
+    { type: mimeType }
+  );
+}
+
+function visibleReply(text = "") {
+  return cleanReply(text)
+    .replace(
+      /\[[^\]\n]{1,40}\]\s*/g,
+      ""
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function makeSpeechText(
+  rawReply,
+  displayReply
+) {
+  const direction =
+    String(rawReply)
+      .match(
+        /\[([^\]\n]{1,40})\]/
+      )?.[0] || "";
+
+  let spoken =
+    displayReply;
+
+  if (spoken.length > 165) {
+    spoken =
+      spoken
+        .slice(0, 165)
+        .replace(
+          /\s+\S*$/,
+          ""
+        )
+        .trim() + "...";
+  }
+
+  const result =
+    `${
+      direction
+        ? direction + " "
+        : ""
+    }${spoken}`.trim();
+
+  return result.slice(
+    0,
+    198
+  );
+}
+
+async function parseJson(
+  response
+) {
+  const raw =
+    await response.text();
+
+  try {
+    return {
+      raw,
+      data:
+        raw
+          ? JSON.parse(raw)
+          : {}
+    };
+  } catch {
+    return {
+      raw,
+      data: {}
+    };
+  }
+}
+
+export default async function handler(
+  req,
+  res
+) {
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "*"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "POST, OPTIONS"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
+
+  if (
+    req.method === "OPTIONS"
+  ) {
+    return res
+      .status(204)
+      .end();
+  }
+
+  if (
+    req.method !== "POST"
+  ) {
+    return res
+      .status(405)
+      .json({
+        error:
+          "Method not allowed"
+      });
+  }
+
+  try {
+    const apiKey =
+      process.env.GROQ_API_KEY;
+
+    if (!apiKey) {
+      return res
+        .status(500)
+        .json({
+          error:
+            "Missing GROQ_API_KEY in Vercel."
+        });
     }
 
-    // A few words at a time feels fast without dumping the whole answer instantly.
-    const amount = Math.min(3, chunks.length - index);
+    const body =
+      typeof req.body === "string"
+        ? JSON.parse(
+            req.body
+          )
+        : req.body || {};
 
-    for(let i = 0; i < amount; i++){
-      bubble.textContent += chunks[index++];
+    if (
+      body.action !== "turn"
+    ) {
+      return res
+        .status(400)
+        .json({
+          error:
+            "Unknown voice action."
+        });
     }
 
-    chat.scrollTop = chat.scrollHeight;
-  }, 32);
-
-  return wrapper;
-}
-
-
-function addUserMessage(text, files){
-  const wrapper = document.createElement("div");
-  wrapper.className = "message user";
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-
-  if(files.length){
-    const sent = document.createElement("div");
-    sent.className = "sent-attachments";
-
-    files.forEach(file => {
-      if(file.type.startsWith("image/")){
-        const img = document.createElement("img");
-        const url = URL.createObjectURL(file);
-        img.className = "sent-image";
-        img.src = url;
-        img.alt = file.name;
-        img.onload = () => URL.revokeObjectURL(url);
-        sent.appendChild(img);
-      }else{
-        const fileEl = document.createElement("div");
-        fileEl.className = "sent-file";
-        fileEl.textContent = file.name;
-        fileEl.title = file.name;
-        sent.appendChild(fileEl);
-      }
-    });
-
-    bubble.appendChild(sent);
-  }
-
-  if(text){
-    const textEl = document.createElement("div");
-    textEl.className = "user-text";
-    textEl.textContent = text;
-    bubble.appendChild(textEl);
-  }
-
-  wrapper.appendChild(bubble);
-  chat.appendChild(wrapper);
-  chat.scrollTop = chat.scrollHeight;
-
-  return wrapper;
-}
-
-
-
-const micButton = document.getElementById("micButton");
-const voiceMode = document.getElementById("voiceMode");
-const voiceBack = document.getElementById("voiceBack");
-const voiceFeed = document.getElementById("voiceFeed");
-const voiceEmpty = document.getElementById("voiceEmpty");
-const voiceStatus = document.getElementById("voiceStatus");
-const voiceTalk = document.getElementById("voiceTalk");
-const voiceReplay = document.getElementById("voiceReplay");
-
-let voiceRecorder = null;
-let voiceStream = null;
-let voiceChunks = [];
-let voiceBusy = false;
-let voiceStopTimer = null;
-let voiceHistory = [];
-let voiceLastAudio = "";
-let voiceAudioContext = null;
-let voiceAudioSource = null;
-
-function openVoiceMode(){
-  voiceMode.classList.add("open");
-  voiceMode.setAttribute("aria-hidden","false");
-  voiceStatus.textContent = "Tap to talk";
-}
-
-function stopVoiceStream(){
-  if(voiceStream){
-    voiceStream.getTracks().forEach(track => track.stop());
-    voiceStream = null;
-  }
-}
-
-function stopVoicePlayback(){
-  if(voiceAudioSource){
-    try{ voiceAudioSource.stop(); }catch{}
-    voiceAudioSource = null;
-  }
-
-  if("speechSynthesis" in window){
-    window.speechSynthesis.cancel();
-  }
-}
-
-function closeVoiceMode(){
-  if(voiceRecorder && voiceRecorder.state === "recording"){
-    try{ voiceRecorder.stop(); }catch{}
-  }
-
-  clearTimeout(voiceStopTimer);
-  stopVoiceStream();
-  stopVoicePlayback();
-
-  voiceMode.classList.remove("open");
-  voiceMode.setAttribute("aria-hidden","true");
-  voiceStatus.textContent = "Tap to talk";
-  voiceTalk.classList.remove("recording","busy");
-}
-
-function addVoiceBubble(text,type){
-  if(voiceEmpty) voiceEmpty.remove();
-
-  const row = document.createElement("div");
-  row.className = "voice-row " + type;
-
-  const bubble = document.createElement("div");
-  bubble.className = "voice-bubble";
-  bubble.textContent = text;
-
-  row.appendChild(bubble);
-  voiceFeed.appendChild(row);
-  voiceFeed.scrollTop = voiceFeed.scrollHeight;
-
-  return row;
-}
-
-function preferredRecordingType(){
-  const types = [
-    "audio/mp4",
-    "audio/webm;codecs=opus",
-    "audio/webm",
-    "audio/ogg;codecs=opus"
-  ];
-
-  return types.find(type =>
-    window.MediaRecorder &&
-    MediaRecorder.isTypeSupported &&
-    MediaRecorder.isTypeSupported(type)
-  ) || "";
-}
-
-function blobToDataURL(blob){
-  return new Promise((resolve,reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-function extensionForMime(type=""){
-  if(type.includes("mp4")) return "m4a";
-  if(type.includes("ogg")) return "ogg";
-  if(type.includes("webm")) return "webm";
-  if(type.includes("wav")) return "wav";
-  return "audio";
-}
-
-async function unlockVoiceAudio(){
-  try{
-    if(!voiceAudioContext){
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if(AudioCtx) voiceAudioContext = new AudioCtx();
-    }
-
-    if(voiceAudioContext?.state === "suspended"){
-      await voiceAudioContext.resume();
-    }
-  }catch{}
-}
-
-async function playVoiceAudio(base64, fallbackText=""){
-  stopVoicePlayback();
-
-  if(base64 && voiceAudioContext){
-    try{
-      const binary = atob(base64);
-      const bytes = new Uint8Array(binary.length);
-
-      for(let i = 0; i < binary.length; i++){
-        bytes[i] = binary.charCodeAt(i);
-      }
-
-      const buffer = await voiceAudioContext.decodeAudioData(bytes.buffer.slice(0));
-      const source = voiceAudioContext.createBufferSource();
-
-      source.buffer = buffer;
-      source.connect(voiceAudioContext.destination);
-      source.start();
-
-      voiceAudioSource = source;
-
-      source.onended = () => {
-        if(voiceAudioSource === source) voiceAudioSource = null;
-        if(!voiceBusy) voiceStatus.textContent = "Tap to talk";
-      };
-
-      return;
-    }catch(error){
-      console.warn("Voice audio playback failed:", error);
-    }
-  }
-
-  if(fallbackText && "speechSynthesis" in window){
-    const utterance = new SpeechSynthesisUtterance(fallbackText);
-    utterance.rate = 1.02;
-    utterance.pitch = 1;
-    window.speechSynthesis.speak(utterance);
-  }
-}
-
-async function sendVoiceTurn(blob){
-  voiceBusy = true;
-  voiceTalk.classList.remove("recording");
-  voiceTalk.classList.add("busy");
-  voiceTalk.disabled = true;
-  voiceStatus.textContent = "Thinking...";
-
-  try{
-    if(location.hostname.endsWith("github.io") && VOICE_API_URL.startsWith("/")){
-      throw new Error(
-        "Voice Mode needs the full Vercel API URL. Set CHAT_API_URL to your Vercel /api/chat URL."
+    const audio =
+      String(
+        body.audio || ""
       );
+
+    const mimeType =
+      String(
+        body.mime_type ||
+          "audio/mp4"
+      );
+
+    const filename =
+      String(
+        body.filename ||
+          "voice.m4a"
+      );
+
+    const instructions =
+      String(
+        body.instructions ||
+          ""
+      ).trim();
+
+    if (!audio) {
+      return res
+        .status(400)
+        .json({
+          error:
+            "No microphone audio received."
+        });
     }
 
-    const audio = await blobToDataURL(blob);
-    const mimeType = blob.type || "audio/mp4";
+    // SPEECH TO TEXT
 
-    const response = await fetch(VOICE_API_URL,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        action:"turn",
+    const audioBlob =
+      dataUrlToBlob(
         audio,
-        mime_type:mimeType,
-        filename:`voice.${extensionForMime(mimeType)}`,
-        instructions:localStorage.getItem("lampai_instructions") || "",
-        history:voiceHistory.slice(-8)
-      })
-    });
-
-    const raw = await response.text();
-    let data = {};
-
-    try{
-      data = raw ? JSON.parse(raw) : {};
-    }catch{
-      data = {error:raw || "Voice Mode returned an invalid response."};
-    }
-
-    if(!response.ok){
-      throw new Error(data.error || "Voice Mode failed.");
-    }
-
-    const transcript = cleanDisplayText(data.transcript || "");
-    const reply = cleanDisplayText(data.reply || "");
-
-    if(transcript){
-      addVoiceBubble(transcript,"user");
-      voiceHistory.push({role:"user",content:transcript});
-    }
-
-    if(reply){
-      addVoiceBubble(reply,"ai");
-      voiceHistory.push({role:"assistant",content:reply});
-    }
-
-    voiceHistory = voiceHistory.slice(-10);
-
-    voiceLastAudio = data.audio || "";
-    voiceReplay.hidden = !reply;
-    voiceStatus.textContent = data.audio ? "Speaking..." : "Reply ready";
-
-    await playVoiceAudio(voiceLastAudio,reply);
-
-    if(!data.audio){
-      voiceStatus.textContent = "Tap to talk";
-    }
-
-  }catch(error){
-    addVoiceBubble(
-      cleanDisplayText(error?.message || "Voice Mode couldn't connect."),
-      "ai"
-    );
-    voiceStatus.textContent = "Tap to try again";
-  }finally{
-    voiceBusy = false;
-    voiceTalk.classList.remove("busy");
-    voiceTalk.disabled = false;
-  }
-}
-
-async function startVoiceRecording(){
-  if(voiceBusy) return;
-
-  if(!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder){
-    addVoiceBubble("Voice recording isn't supported in this browser.","ai");
-    return;
-  }
-
-  stopVoicePlayback();
-  await unlockVoiceAudio();
-
-  try{
-    voiceStream = await navigator.mediaDevices.getUserMedia({
-      audio:{
-        echoCancellation:true,
-        noiseSuppression:true,
-        autoGainControl:true
-      }
-    });
-
-    const mimeType = preferredRecordingType();
-    const options = mimeType ? {mimeType} : undefined;
-
-    voiceRecorder = new MediaRecorder(voiceStream,options);
-    voiceChunks = [];
-
-    voiceRecorder.ondataavailable = event => {
-      if(event.data && event.data.size){
-        voiceChunks.push(event.data);
-      }
-    };
-
-    voiceRecorder.onstop = async () => {
-      clearTimeout(voiceStopTimer);
-
-      const blob = new Blob(
-        voiceChunks,
-        {type:voiceRecorder.mimeType || mimeType || "audio/mp4"}
+        mimeType
       );
 
-      voiceChunks = [];
-      stopVoiceStream();
+    const form =
+      new FormData();
 
-      if(blob.size < 100){
-        voiceStatus.textContent = "I didn't hear anything";
-        return;
-      }
-
-      await sendVoiceTurn(blob);
-    };
-
-    voiceRecorder.start();
-
-    voiceTalk.classList.add("recording");
-    voiceTalk.setAttribute("aria-label","Stop talking");
-    voiceStatus.textContent = "Listening...";
-
-    voiceStopTimer = setTimeout(() => {
-      if(voiceRecorder?.state === "recording"){
-        voiceRecorder.stop();
-      }
-    },30000);
-
-  }catch(error){
-    stopVoiceStream();
-    voiceStatus.textContent =
-      error?.name === "NotAllowedError"
-        ? "Microphone permission is off"
-        : "Couldn't start the microphone";
-  }
-}
-
-function stopVoiceRecording(){
-  if(voiceRecorder?.state === "recording"){
-    voiceStatus.textContent = "Got it...";
-    voiceRecorder.stop();
-    voiceTalk.classList.remove("recording");
-    voiceTalk.setAttribute("aria-label","Start talking");
-  }
-}
-
-micButton.onclick = openVoiceMode;
-voiceBack.onclick = closeVoiceMode;
-
-voiceTalk.onclick = async () => {
-  if(voiceBusy) return;
-
-  if(voiceRecorder?.state === "recording"){
-    stopVoiceRecording();
-  }else{
-    await startVoiceRecording();
-  }
-};
-
-voiceReplay.onclick = async () => {
-  const lastAssistant = [...voiceHistory]
-    .reverse()
-    .find(item => item.role === "assistant")?.content || "";
-
-  await unlockVoiceAudio();
-  await playVoiceAudio(voiceLastAudio,lastAssistant);
-};
-
-
-form.addEventListener("submit", async e => {
-
-  e.preventDefault();
-
-  const text = input.value.trim();
-  const outgoingAttachments = [...selectedAttachments];
-
-  if(!text && outgoingAttachments.length === 0) return;
-
-
-  const welcome = document.querySelector(".welcome");
-
-  if(welcome) welcome.remove();
-
-
-  addUserMessage(text, outgoingAttachments);
-
-  input.value = "";
-
-  input.disabled = true;
-
-  send.disabled = true;
-
-
-  const thinking = addThinkingMessage();
-
-
-  try{
-
-    if(location.hostname.endsWith("github.io") && CHAT_API_URL.startsWith("/")){
-      throw new Error(
-        "LampAI is on GitHub Pages, but CHAT_API_URL still points to /api/chat. " +
-        "Set CHAT_API_URL to the full Vercel API URL."
-      );
-    }
-
-    const response = await fetch(CHAT_API_URL,{
-
-      method:"POST",
-
-      headers:{
-        "Content-Type":"application/json"
-      },
-
-      body:JSON.stringify({
-        message:text,
-        instructions: localStorage.getItem("lampai_instructions") || "",
-        attachments: await Promise.all(outgoingAttachments.map(serializeAttachment))
-      })
-
-    });
-
-
-    const raw = await response.text();
-    let data = {};
-
-    try{
-      data = raw ? JSON.parse(raw) : {};
-    }catch{
-      data = { error: raw || "The server returned an invalid response." };
-    }
-
-    thinking.remove();
-
-
-    if(!response.ok){
-
-      addMessage(
-        cleanDisplayText(data.error || "Something went wrong."),
-        "ai"
-      );
-
-      return;
-
-    }
-
-
-    typeAIMessage(
-      data.reply || "I didn't get a response."
+    form.append(
+      "file",
+      audioBlob,
+      filename
     );
 
-    selectedAttachments = [];
-    renderAttachments();
-
-
-  }catch(error){
-
-    thinking.remove();
-
-    addMessage(
-      cleanDisplayText(error?.message || "I couldn't connect right now."),
-      "ai"
+    form.append(
+      "model",
+      STT_MODEL
     );
 
-  }finally{
+    form.append(
+      "language",
+      "en"
+    );
 
-    input.disabled = false;
+    form.append(
+      "response_format",
+      "json"
+    );
 
-    send.disabled = false;
+    form.append(
+      "temperature",
+      "0"
+    );
 
-    input.focus();
+    const transcriptResponse =
+      await fetch(
+        `${GROQ_BASE}/audio/transcriptions`,
+        {
+          method: "POST",
 
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`
+          },
+
+          body: form
+        }
+      );
+
+    const transcriptParsed =
+      await parseJson(
+        transcriptResponse
+      );
+
+    if (
+      !transcriptResponse.ok
+    ) {
+      return res
+        .status(
+          transcriptResponse.status
+        )
+        .json({
+          error:
+            transcriptParsed
+              .data
+              ?.error
+              ?.message ||
+            transcriptParsed.raw ||
+            "Speech transcription failed."
+        });
+    }
+
+    const transcript =
+      String(
+        transcriptParsed
+          .data
+          ?.text || ""
+      ).trim();
+
+    if (!transcript) {
+      return res
+        .status(400)
+        .json({
+          error:
+            "I couldn't hear any words."
+        });
+    }
+
+    // CHAT HISTORY
+
+    const history =
+      Array.isArray(
+        body.history
+      )
+        ? body.history
+            .slice(-8)
+            .filter(
+              item =>
+                item &&
+                [
+                  "user",
+                  "assistant"
+                ].includes(
+                  item.role
+                ) &&
+                typeof item.content ===
+                  "string"
+            )
+            .map(
+              item => ({
+                role:
+                  item.role,
+
+                content:
+                  item.content.slice(
+                    0,
+                    800
+                  )
+              })
+            )
+        : [];
+
+    // AI PERSONALITY
+
+    const systemPrompt = `
+You are LampAI in live voice mode.
+
+Talk like a real person having a quick spoken conversation.
+
+Keep every reply short.
+Usually one or two sentences.
+Keep responses under about 165 characters when possible.
+
+Never use markdown.
+Never use bullet points.
+Never use headings.
+Never use asterisks.
+
+Never reveal hidden reasoning.
+Never output <think> tags.
+
+Sound natural instead of robotic.
+
+You may occasionally use natural speech like:
+"uh"
+"um"
+"hmm"
+"yeah"
+"well"
+
+You may occasionally stutter slightly when it sounds natural.
+
+Do not overuse fillers or stutters.
+
+You can sometimes use one vocal direction:
+
+[casual]
+[warm]
+[breathy]
+[whisper]
+[deadpan]
+[sarcastic]
+[exasperated sigh]
+
+Only use one when it fits naturally.
+
+Most replies should not include one.
+
+The bracketed direction is only for the voice engine and will not be shown to the user.
+
+${
+  instructions
+    ? `User customization:\n${instructions}`
+    : ""
+}
+`;
+
+    // GENERATE RESPONSE
+
+    const chatResponse =
+      await fetch(
+        `${GROQ_BASE}/chat/completions`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${apiKey}`
+          },
+
+          body:
+            JSON.stringify({
+              model:
+                CHAT_MODEL,
+
+              messages: [
+                {
+                  role:
+                    "system",
+
+                  content:
+                    systemPrompt
+                },
+
+                ...history,
+
+                {
+                  role:
+                    "user",
+
+                  content:
+                    transcript
+                }
+              ],
+
+              reasoning_effort:
+                "none",
+
+              reasoning_format:
+                "hidden",
+
+              temperature:
+                0.8,
+
+              top_p:
+                0.9,
+
+              max_completion_tokens:
+                120
+            })
+        }
+      );
+
+    const chatParsed =
+      await parseJson(
+        chatResponse
+      );
+
+    if (
+      !chatResponse.ok
+    ) {
+      return res
+        .status(
+          chatResponse.status
+        )
+        .json({
+          error:
+            chatParsed
+              .data
+              ?.error
+              ?.message ||
+            chatParsed.raw ||
+            "LampAI voice reply failed."
+        });
+    }
+
+    const rawReply =
+      cleanReply(
+        chatParsed
+          .data
+          ?.choices?.[0]
+          ?.message
+          ?.content || ""
+      );
+
+    const reply =
+      visibleReply(
+        rawReply
+      );
+
+    if (!reply) {
+      return res
+        .status(502)
+        .json({
+          error:
+            "LampAI returned an empty voice reply."
+        });
+    }
+
+    // TEXT TO SPEECH
+
+    const speechText =
+      makeSpeechText(
+        rawReply,
+        reply
+      );
+
+    try {
+      const speechResponse =
+        await fetch(
+          `${GROQ_BASE}/audio/speech`,
+          {
+            method:
+              "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${apiKey}`
+            },
+
+            body:
+              JSON.stringify({
+                model:
+                  TTS_MODEL,
+
+                voice:
+                  TTS_VOICE,
+
+                input:
+                  speechText,
+
+                response_format:
+                  "wav"
+              })
+          }
+        );
+
+      if (
+        speechResponse.ok
+      ) {
+        const audioBuffer =
+          Buffer.from(
+            await speechResponse.arrayBuffer()
+          );
+
+        return res
+          .status(200)
+          .json({
+            transcript,
+            reply,
+
+            audio:
+              audioBuffer.toString(
+                "base64"
+              )
+          });
+      }
+
+      const failedSpeech =
+        await speechResponse.text();
+
+      console.error(
+        "Groq TTS failed:",
+        speechResponse.status,
+        failedSpeech
+      );
+
+      return res
+        .status(200)
+        .json({
+          transcript,
+          reply,
+
+          audio: "",
+
+          tts_warning:
+            "Expressive voice was unavailable."
+        });
+
+    } catch (
+      ttsError
+    ) {
+      console.error(
+        "Groq TTS error:",
+        ttsError
+      );
+
+      return res
+        .status(200)
+        .json({
+          transcript,
+          reply,
+
+          audio: "",
+
+          tts_warning:
+            "Expressive voice was unavailable."
+        });
+    }
+
+  } catch (error) {
+    console.error(
+      "LampAI voice error:",
+      error
+    );
+
+    return res
+      .status(500)
+      .json({
+        error:
+          error?.message ||
+          "Voice Mode server error."
+      });
   }
-
-});
-
-</script>
-
-</body>
-</html>
+}
