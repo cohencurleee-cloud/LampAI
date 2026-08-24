@@ -568,6 +568,13 @@ textarea:focus{
 </div>
 
 <div class="bottom">
+  <div class="attachments" id="attachments"></div>
+  <div id="attachMenu">
+    <button type="button" class="attach-option" id="imageOption">📷 Add image</button>
+    <button type="button" class="attach-option" id="fileOption">📎 Add file</button>
+  </div>
+  <input id="imageInput" type="file" accept="image/*" multiple hidden>
+  <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.pdf,.doc,.docx" multiple hidden>
 
   <form class="composer" id="form">
 
@@ -795,6 +802,34 @@ const form = document.getElementById("form");
 const send = document.getElementById("send");
 const overlay = document.getElementById("overlay");
 const instructions = document.getElementById("instructions");
+const attach = document.getElementById("attach");
+const attachMenu = document.getElementById("attachMenu");
+const imageInput = document.getElementById("imageInput");
+const fileInput = document.getElementById("fileInput");
+const attachmentsEl = document.getElementById("attachments");
+let selectedAttachments = [];
+
+attach.onclick = e => { e.stopPropagation(); attachMenu.classList.toggle("open"); };
+document.getElementById("imageOption").onclick = () => { attachMenu.classList.remove("open"); imageInput.click(); };
+document.getElementById("fileOption").onclick = () => { attachMenu.classList.remove("open"); fileInput.click(); };
+document.addEventListener("click", e => { if (!attachMenu.contains(e.target) && e.target !== attach) attachMenu.classList.remove("open"); });
+function renderAttachments(){
+  attachmentsEl.innerHTML = "";
+  selectedAttachments.forEach((file,i) => {
+    const chip=document.createElement("div"); chip.className="attachment-chip";
+    chip.innerHTML=`<span>${file.type.startsWith("image/")?"🖼️":"📄"} ${file.name}</span>`;
+    const x=document.createElement("button"); x.type="button"; x.textContent="×"; x.onclick=()=>{selectedAttachments.splice(i,1);renderAttachments()};
+    chip.appendChild(x); attachmentsEl.appendChild(chip);
+  });
+}
+function addFiles(files){
+  for(const file of files){ if(selectedAttachments.length>=5) break; if(!selectedAttachments.some(x=>x.name===file.name&&x.size===file.size)) selectedAttachments.push(file); }
+  renderAttachments();
+}
+imageInput.onchange=e=>{addFiles([...e.target.files]);imageInput.value=""};
+fileInput.onchange=e=>{addFiles([...e.target.files]);fileInput.value=""};
+function fileToDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}
+
 
 instructions.value =
   localStorage.getItem("lampai_instructions") || "";
@@ -952,12 +987,13 @@ form.addEventListener("submit", async e => {
       },
 
       body:JSON.stringify({
-
         message:text,
-
-        instructions:
-          localStorage.getItem("lampai_instructions") || ""
-
+        instructions: localStorage.getItem("lampai_instructions") || "",
+        attachments: await Promise.all(selectedAttachments.map(async file => ({
+          name:file.name,
+          type:file.type,
+          content:file.type.startsWith("image/") ? await fileToDataURL(file) : await file.text()
+        })))
       })
 
     });
