@@ -473,6 +473,8 @@ textarea:focus{
   text-align:center;
 }
 
+
+.account-section{margin:0 0 24px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(255,255,255,.035)}.account-row{display:flex;align-items:center;gap:12px}.account-avatar{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#24272c;overflow:hidden}.account-avatar img{width:44px;height:44px;border-radius:50%;object-fit:cover}.account-info{min-width:0;display:flex;flex-direction:column;gap:3px}.account-info strong,.account-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-info strong{font-size:14px}.account-info span{font-size:12px;color:#777d86}.account-button{width:100%;height:44px;margin-top:12px;border:0;border-radius:13px;background:#fff;color:#000;font-weight:700}
 /* PHONE */
 
 @media(max-width:600px){
@@ -528,7 +530,6 @@ textarea:focus{
     LampAI
   </div>
 
-  <button class="header-button auth-header-button" id="authButton">👤</button>
   <button class="header-button" id="settingsButton">⚙</button>
 </header>
 
@@ -624,7 +625,7 @@ textarea:focus{
 
     <div class="handle"></div>
 
-    <h2>Customize LampAI</h2>
+    <div class="account-section"><div class="account-row"><div class="account-avatar" id="accountAvatar">👤</div><div class="account-info"><strong id="accountName">Not signed in</strong><span id="accountEmail">Sign in to use your account</span></div></div><button class="account-button" id="accountButton">Sign In</button></div><h2>Customize LampAI</h2>
 
     <p>
       Tell LampAI how you want it to talk and behave.
@@ -696,19 +697,7 @@ function closeAuth() {
   authStatus.textContent = "";
 }
 
-authButton.onclick = async () => {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-
-  if (session) {
-    const confirmed = confirm("Sign out of LampAI?");
-    if (confirmed) {
-      await supabaseClient.auth.signOut();
-      authButton.textContent = "👤";
-    }
-  } else {
-    openAuth("signin");
-  }
-};
+const accountButton=document.getElementById("accountButton");const accountName=document.getElementById("accountName");const accountEmail=document.getElementById("accountEmail");const accountAvatar=document.getElementById("accountAvatar");async function updateAccountUI(session){if(session?.user){const email=session.user.email||"Signed in";accountName.textContent=session.user.user_metadata?.full_name||session.user.user_metadata?.name||email.split("@")[0];accountEmail.textContent=email;accountButton.textContent="Sign Out";const avatar=session.user.user_metadata?.avatar_url||session.user.user_metadata?.picture;accountAvatar.innerHTML=avatar?`<img src="${avatar}" alt="">`:"👤";}else{accountName.textContent="Not signed in";accountEmail.textContent="Sign in to use your account";accountButton.textContent="Sign In";accountAvatar.textContent="👤";}}accountButton.onclick=async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session){await supabaseClient.auth.signOut();updateAccountUI(null);}else openAuth("signin");};
 
 authClose.onclick = closeAuth;
 
@@ -725,7 +714,7 @@ document.getElementById("googleAuth").onclick = async () => {
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: window.location.origin
+      redirectTo: "https://cohencurleee-cloud.github.io/LAMPAI/"
     }
   });
 
@@ -787,17 +776,14 @@ authSubmit.onclick = async () => {
   }
 };
 
-supabaseClient.auth.onAuthStateChange((event, session) => {
-  authButton.textContent = session ? "✓" : "👤";
-});
+supabaseClient.auth.onAuthStateChange((event, session) => { updateAccountUI(session); });
 
 // Require a signed-in user before using LampAI.
 (async () => {
   const { data: { session } } = await supabaseClient.auth.getSession();
 
-  if (!session) {
-    openAuth("signin");
-  }
+  updateAccountUI(session);
+  if (!session) openAuth("signin");
 })();
 </script>
 
