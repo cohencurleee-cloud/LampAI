@@ -3,16 +3,20 @@ const GROQ_URL =
 
 const MODEL = "qwen/qwen3.6-27b";
 
+function cleanReply(text = "") {
+  return String(text)
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think>[\s\S]*/gi, "")
+    .replace(/\*\*/g, "")
+    .replace(/^\s*\*\s+/gm, "")
+    .replace(/\*/g, "")
+    .trim();
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, OPTIONS"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
@@ -29,8 +33,7 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       return res.status(500).json({
-        error:
-          "Missing GROQ_API_KEY in Vercel."
+        error: "Missing GROQ_API_KEY in Vercel."
       });
     }
 
@@ -52,14 +55,12 @@ export default async function handler(req, res) {
 
     if (!message && attachments.length === 0) {
       return res.status(400).json({
-        error:
-          "Send a message, image, or file."
+        error: "Send a message, image, or file."
       });
     }
 
     const userContent = [];
 
-    // User's typed message
     if (message) {
       userContent.push({
         type: "text",
@@ -67,7 +68,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // Attachments
     for (const file of attachments) {
       const name =
         String(file?.name || "attachment");
@@ -84,9 +84,7 @@ export default async function handler(req, res) {
 
       // IMAGE
       if (type.startsWith("image/")) {
-        if (
-          !content.startsWith("data:image/")
-        ) {
+        if (!content.startsWith("data:image/")) {
           return res.status(400).json({
             error:
               `${name} could not be read as an image.`
@@ -103,7 +101,7 @@ export default async function handler(req, res) {
         continue;
       }
 
-      // TEXT-BASED FILES
+      // TEXT FILES
       if (
         file.encoding === "text" ||
         type.startsWith("text/") ||
@@ -112,19 +110,18 @@ export default async function handler(req, res) {
         userContent.push({
           type: "text",
           text:
-            `\nAttached file: ${name}\n\n` +
+            `Attached file: ${name}\n\n` +
             content
         });
 
         continue;
       }
 
-      // PDF / DOCX etc.
       userContent.push({
         type: "text",
         text:
-          `The user attached a file named "${name}", ` +
-          `but this file type cannot currently be read.`
+          `The user attached "${name}", but this file type cannot currently be read. ` +
+          `Tell them that briefly only if it matters to their question.`
       });
     }
 
@@ -135,25 +132,38 @@ export default async function handler(req, res) {
       });
     }
 
-    const messages = [];
+    const baseInstructions = `
+You are LampAI.
 
-    if (instructions) {
-      messages.push({
-        role: "system",
-        content: instructions
-      });
-    } else {
-      messages.push({
-        role: "system",
-        content:
-          "You are LampAI. Be helpful, intelligent, direct, and natural."
-      });
-    }
+Answer naturally like a normal person.
+Be concise and direct.
+For normal questions, usually answer in 1 to 4 short sentences.
 
-    messages.push({
-      role: "user",
-      content: userContent
-    });
+Do not reveal chain-of-thought, private reasoning, scratch work, or internal analysis.
+Never output <think> tags.
+Never describe hidden reasoning.
+
+Use plain text by default.
+Do not use markdown asterisks.
+Do not use bold formatting.
+Do not use markdown bullet lists unless the user asks for a list.
+
+Do not repeat the user's question.
+Do not add unnecessary headings.
+Do not add unnecessary summaries.
+Do not over-explain simple questions.
+
+For image questions, answer what the user asked first.
+Do not write a giant image-analysis report unless they ask for one.
+`;
+
+    const systemPrompt =
+      baseInstructions +
+      (
+        instructions
+          ? `\nUser customization:\n${instructions}`
+          : ""
+      );
 
     const response = await fetch(
       GROQ_URL,
@@ -161,18 +171,32 @@ export default async function handler(req, res) {
         method: "POST",
 
         headers: {
-          "Content-Type":
-            "application/json",
-
-          Authorization:
-            `Bearer ${apiKey}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
         },
 
         body: JSON.stringify({
           model: MODEL,
-          messages,
+
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt
+            },
+
+            {
+              role: "user",
+              content: userContent
+            }
+          ],
+
+          reasoning_effort: "none",
+          reasoning_format: "hidden",
+
           temperature: 0.7,
-          max_completion_tokens: 2048
+          top_p: 0.8,
+
+          max_completion_tokens: 700
         })
       }
     );
@@ -195,23 +219,21 @@ export default async function handler(req, res) {
         raw
       );
 
-      return res
-        .status(response.status)
-        .json({
-          error:
-            data?.error?.message ||
-            raw ||
-            `Groq failed (${response.status}).`
-        });
+      return res.status(response.status).json({
+        error:
+          data?.error?.message ||
+          raw ||
+          `Groq failed (${response.status}).`
+      });
     }
 
-    const reply =
-      data?.choices?.[0]?.message?.content;
+    const reply = cleanReply(
+      data?.choices?.[0]?.message?.content || ""
+    );
 
     if (!reply) {
       return res.status(502).json({
-        error:
-          "Groq returned no response."
+        error: "Groq returned no response."
       });
     }
 
