@@ -63,8 +63,8 @@ header{
 
 .header-button{
   position:absolute;
-  width:38px;
-  height:38px;
+  width:42px;
+  height:42px;
   border:0;
   border-radius:50%;
   background:rgba(255,255,255,.07);
@@ -160,7 +160,7 @@ header{
 }
 
 .message{
-  width:min(760px,100%);
+  width:min(820px,100%);
   margin:0 auto 18px;
   display:flex;
   animation:appear .22s ease;
@@ -212,15 +212,15 @@ header{
 }
 
 .composer{
-  width:min(760px,100%);
+  width:min(820px,100%);
   margin:auto;
-  min-height:56px;
+  min-height:64px;
   display:flex;
   align-items:center;
-  gap:7px;
-  padding:7px 8px 7px 14px;
+  gap:8px;
+  padding:9px 10px 9px 12px;
   border:1px solid rgba(255,255,255,.1);
-  border-radius:22px;
+  border-radius:25px;
   background:rgba(20,21,24,.94);
   backdrop-filter:blur(25px);
   box-shadow:0 12px 40px rgba(0,0,0,.4);
@@ -233,7 +233,7 @@ header{
   outline:0;
   background:transparent;
   color:white;
-  font-size:16px;
+  font-size:17px;
 }
 
 #input::placeholder{
@@ -252,8 +252,8 @@ header{
 }
 
 .send{
-  width:40px;
-  height:40px;
+  width:44px;
+  height:44px;
   flex-shrink:0;
   border:0;
   border-radius:50%;
@@ -479,79 +479,134 @@ textarea:focus{
 /* ATTACHMENTS */
 
 .attachments{
-  width:min(760px,100%);
-  margin:0 auto 6px;
-  padding:0 4px;
+  width:min(820px,100%);
+  margin:0 auto 8px;
+  padding:0 2px;
   display:flex;
-  gap:7px;
+  gap:8px;
   flex-wrap:wrap;
+  align-items:flex-end;
 }
 
-.attachment-chip{
-  max-width:100%;
-  min-width:0;
+.attachment-preview{
+  position:relative;
+  flex:0 0 auto;
+}
+
+.image-preview{
+  width:76px;
+  height:76px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:15px;
+  background:#15171a;
+}
+
+.image-preview img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.file-preview{
+  max-width:220px;
+  height:42px;
   display:flex;
   align-items:center;
-  gap:7px;
-  padding:7px 9px 7px 11px;
+  padding:0 34px 0 12px;
   border:1px solid rgba(255,255,255,.09);
-  border-radius:13px;
+  border-radius:12px;
   background:#17191d;
   color:#ddd;
   font-size:12px;
-}
-
-.attachment-chip span{
-  min-width:0;
-  max-width:250px;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
 
-.attachment-chip button{
+.remove-attachment{
+  position:absolute;
+  top:-6px;
+  right:-6px;
   width:22px;
   height:22px;
-  border:0;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(255,255,255,.12);
   border-radius:50%;
-  background:rgba(255,255,255,.08);
-  color:#aaa;
+  background:#2a2d32;
+  color:#fff;
+  font-size:14px;
   line-height:1;
 }
 
 #attachMenu{
   position:absolute;
-  left:max(12px,calc(50% - 380px));
-  bottom:76px;
+  left:max(12px,calc(50% - 410px));
+  bottom:82px;
   z-index:25;
   display:none;
-  width:180px;
-  padding:7px;
+  width:126px;
+  padding:5px;
   border:1px solid rgba(255,255,255,.1);
-  border-radius:16px;
+  border-radius:12px;
   background:#17191d;
-  box-shadow:0 16px 50px rgba(0,0,0,.5);
+  box-shadow:0 12px 36px rgba(0,0,0,.5);
 }
 
 #attachMenu.open{
   display:flex;
   flex-direction:column;
-  gap:4px;
+  gap:2px;
 }
 
 .attach-option{
   width:100%;
-  height:42px;
-  padding:0 11px;
+  height:35px;
+  padding:0 9px;
   border:0;
-  border-radius:11px;
+  border-radius:8px;
   background:transparent;
   color:#e5e5e5;
+  font-size:13px;
   text-align:left;
 }
 
 .attach-option:active{
   background:rgba(255,255,255,.08);
+}
+
+/* Sent attachment previews */
+.sent-attachments{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+
+.sent-image{
+  width:min(220px,58vw);
+  max-height:220px;
+  display:block;
+  object-fit:cover;
+  border-radius:13px;
+}
+
+.sent-file{
+  max-width:240px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:rgba(0,0,0,.12);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:12px;
+}
+
+.user-text{
+  white-space:pre-wrap;
 }
 
 /* PHONE */
@@ -593,6 +648,20 @@ textarea:focus{
     padding-left:12px;
     padding-right:12px;
   }
+
+  .image-preview{
+    width:68px;
+    height:68px;
+  }
+
+  #attachMenu{
+    left:12px;
+  }
+
+  .composer{
+    min-height:62px;
+  }
+
 }
 </style>
 </head>
@@ -649,8 +718,8 @@ textarea:focus{
 <div class="bottom">
   <div class="attachments" id="attachments"></div>
   <div id="attachMenu">
-    <button type="button" class="attach-option" id="imageOption">📷 Add image</button>
-    <button type="button" class="attach-option" id="fileOption">📎 Add file</button>
+    <button type="button" class="attach-option" id="imageOption">Add image</button>
+    <button type="button" class="attach-option" id="fileOption">Add file</button>
   </div>
   <input id="imageInput" type="file" accept="image/*" multiple hidden>
   <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.pdf,.doc,.docx" multiple hidden>
@@ -899,20 +968,142 @@ document.getElementById("fileOption").onclick = () => { attachMenu.classList.rem
 document.addEventListener("click", e => { if (!attachMenu.contains(e.target) && e.target !== attach) attachMenu.classList.remove("open"); });
 function renderAttachments(){
   attachmentsEl.innerHTML = "";
+
   selectedAttachments.forEach((file,i) => {
-    const chip=document.createElement("div"); chip.className="attachment-chip";
-    chip.innerHTML=`<span>${file.type.startsWith("image/")?"🖼️":"📄"} ${file.name}</span>`;
-    const x=document.createElement("button"); x.type="button"; x.textContent="×"; x.onclick=()=>{selectedAttachments.splice(i,1);renderAttachments()};
-    chip.appendChild(x); attachmentsEl.appendChild(chip);
+    const preview = document.createElement("div");
+    preview.className = "attachment-preview " + (file.type.startsWith("image/") ? "image-preview" : "file-preview");
+
+    if(file.type.startsWith("image/")){
+      const img = document.createElement("img");
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      img.alt = file.name;
+      img.onload = () => URL.revokeObjectURL(url);
+      preview.appendChild(img);
+    }else{
+      preview.title = file.name;
+      preview.appendChild(document.createTextNode(file.name));
+    }
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "remove-attachment";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", `Remove ${file.name}`);
+    remove.onclick = () => {
+      selectedAttachments.splice(i,1);
+      renderAttachments();
+    };
+
+    preview.appendChild(remove);
+    attachmentsEl.appendChild(preview);
   });
 }
+
 function addFiles(files){
-  for(const file of files){ if(selectedAttachments.length>=5) break; if(!selectedAttachments.some(x=>x.name===file.name&&x.size===file.size)) selectedAttachments.push(file); }
+  for(const file of files){
+    if(selectedAttachments.length >= 5) break;
+
+    const duplicate = selectedAttachments.some(
+      x => x.name === file.name && x.size === file.size && x.lastModified === file.lastModified
+    );
+
+    if(file.size > 3.2 * 1024 * 1024){
+      alert(`${file.name} is too large. Keep each attachment under about 3 MB for this web build.`);
+      continue;
+    }
+
+    if(!duplicate) selectedAttachments.push(file);
+  }
+
   renderAttachments();
 }
-imageInput.onchange=e=>{addFiles([...e.target.files]);imageInput.value=""};
-fileInput.onchange=e=>{addFiles([...e.target.files]);fileInput.value=""};
-function fileToDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}
+
+async function normalizeImageFile(file){
+  // Grok vision accepts JPEG/PNG. This also shrinks huge phone photos
+  // so the JSON request doesn't get wrecked by serverless body limits.
+  try{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+
+    await new Promise((resolve,reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = url;
+    });
+
+    const maxSide = 1600;
+    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+    const width = Math.max(1, Math.round(img.naturalWidth * scale));
+    const height = Math.max(1, Math.round(img.naturalHeight * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, width, height);
+    URL.revokeObjectURL(url);
+
+    const blob = await new Promise(resolve =>
+      canvas.toBlob(resolve, "image/jpeg", 0.84)
+    );
+
+    if(!blob) return file;
+
+    const cleanName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+    return new File([blob], cleanName, {
+      type: "image/jpeg",
+      lastModified: Date.now()
+    });
+  }catch{
+    return file;
+  }
+}
+
+imageInput.onchange = async e => {
+  const picked = [...e.target.files];
+  imageInput.value = "";
+
+  const normalized = [];
+  for(const file of picked){
+    normalized.push(await normalizeImageFile(file));
+  }
+
+  addFiles(normalized);
+};
+
+fileInput.onchange = e => {
+  addFiles([...e.target.files]);
+  fileInput.value = "";
+};
+
+function fileToDataURL(file){
+  return new Promise((resolve,reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function isTextFile(file){
+  return file.type.startsWith("text/") ||
+    /\.(txt|md|csv|json)$/i.test(file.name);
+}
+
+async function serializeAttachment(file){
+  const textFile = isTextFile(file);
+
+  return {
+    name: file.name,
+    type: file.type || "application/octet-stream",
+    size: file.size,
+    kind: file.type.startsWith("image/") ? "image" : "file",
+    encoding: textFile ? "text" : "data-url",
+    content: textFile ? await file.text() : await fileToDataURL(file)
+  };
+}
 
 
 instructions.value =
@@ -1029,6 +1220,53 @@ function addMessage(text,type){
 }
 
 
+function addUserMessage(text, files){
+  const wrapper = document.createElement("div");
+  wrapper.className = "message user";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  if(files.length){
+    const sent = document.createElement("div");
+    sent.className = "sent-attachments";
+
+    files.forEach(file => {
+      if(file.type.startsWith("image/")){
+        const img = document.createElement("img");
+        const url = URL.createObjectURL(file);
+        img.className = "sent-image";
+        img.src = url;
+        img.alt = file.name;
+        img.onload = () => URL.revokeObjectURL(url);
+        sent.appendChild(img);
+      }else{
+        const fileEl = document.createElement("div");
+        fileEl.className = "sent-file";
+        fileEl.textContent = file.name;
+        fileEl.title = file.name;
+        sent.appendChild(fileEl);
+      }
+    });
+
+    bubble.appendChild(sent);
+  }
+
+  if(text){
+    const textEl = document.createElement("div");
+    textEl.className = "user-text";
+    textEl.textContent = text;
+    bubble.appendChild(textEl);
+  }
+
+  wrapper.appendChild(bubble);
+  chat.appendChild(wrapper);
+  chat.scrollTop = chat.scrollHeight;
+
+  return wrapper;
+}
+
+
 form.addEventListener("submit", async e => {
 
   e.preventDefault();
@@ -1044,12 +1282,7 @@ form.addEventListener("submit", async e => {
   if(welcome) welcome.remove();
 
 
-  const userDisplay = [
-    text,
-    ...outgoingAttachments.map(file => `📎 ${file.name}`)
-  ].filter(Boolean).join("\n");
-
-  addMessage(userDisplay,"user");
+  addUserMessage(text, outgoingAttachments);
 
   input.value = "";
 
@@ -1086,12 +1319,7 @@ form.addEventListener("submit", async e => {
       body:JSON.stringify({
         message:text,
         instructions: localStorage.getItem("lampai_instructions") || "",
-        attachments: await Promise.all(outgoingAttachments.map(async file => ({
-          name:file.name,
-          type:file.type,
-          size:file.size,
-          content:file.type.startsWith("image/") ? await fileToDataURL(file) : await file.text()
-        })))
+        attachments: await Promise.all(outgoingAttachments.map(serializeAttachment))
       })
 
     });
