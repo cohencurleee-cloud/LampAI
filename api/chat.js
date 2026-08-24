@@ -1,34 +1,18 @@
-const MODEL = process.env.GROK_MODEL || "grok-4.6";
+const GROQ_URL =
+  "https://api.groq.com/openai/v1/chat/completions";
 
-function getApiKey() {
-  return process.env.XAI_API_KEY || process.env.GROK_API_KEY || "";
-}
-
-function getReply(data) {
-  if (typeof data?.output_text === "string" && data.output_text.trim()) {
-    return data.output_text.trim();
-  }
-
-  const parts = [];
-
-  for (const item of data?.output || []) {
-    for (const content of item?.content || []) {
-      if (
-        content?.type === "output_text" &&
-        typeof content.text === "string"
-      ) {
-        parts.push(content.text);
-      }
-    }
-  }
-
-  return parts.join("\n\n").trim();
-}
+const MODEL = "qwen/qwen3.6-27b";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "POST, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
@@ -41,11 +25,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiKey = getApiKey();
+    const apiKey = process.env.GROQ_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "Missing XAI_API_KEY in Vercel."
+        error:
+          "Missing GROQ_API_KEY in Vercel."
       });
     }
 
@@ -54,8 +39,11 @@ export default async function handler(req, res) {
         ? JSON.parse(req.body)
         : req.body || {};
 
-    const message = String(body.message || "").trim();
-    const instructions = String(body.instructions || "").trim();
+    const message =
+      String(body.message || "").trim();
+
+    const instructions =
+      String(body.instructions || "").trim();
 
     const attachments =
       Array.isArray(body.attachments)
@@ -64,143 +52,166 @@ export default async function handler(req, res) {
 
     if (!message && attachments.length === 0) {
       return res.status(400).json({
-        error: "Send a message or attachment."
+        error:
+          "Send a message, image, or file."
       });
     }
 
-    const content = [];
+    const userContent = [];
 
+    // User's typed message
     if (message) {
-      content.push({
-        type: "input_text",
+      userContent.push({
+        type: "text",
         text: message
       });
     }
 
+    // Attachments
     for (const file of attachments) {
-      const type = String(file?.type || "");
-      const name = String(file?.name || "attachment");
+      const name =
+        String(file?.name || "attachment");
 
-      const data =
+      const type =
+        String(file?.type || "");
+
+      const content =
         typeof file?.content === "string"
           ? file.content
           : "";
 
-      if (!data) continue;
+      if (!content) continue;
 
-      // IMAGES
+      // IMAGE
       if (type.startsWith("image/")) {
         if (
-          !/^data:image\/(jpeg|jpg|png);base64,/i.test(data)
+          !content.startsWith("data:image/")
         ) {
           return res.status(400).json({
-            error: `${name} must be a JPEG or PNG image.`
+            error:
+              `${name} could not be read as an image.`
           });
         }
 
-        content.push({
-          type: "input_image",
-          image_url: data,
-          detail: "high"
+        userContent.push({
+          type: "image_url",
+          image_url: {
+            url: content
+          }
         });
 
         continue;
       }
 
-      // TEXT FILES
-      if (file?.encoding === "text") {
-        content.push({
-          type: "input_text",
+      // TEXT-BASED FILES
+      if (
+        file.encoding === "text" ||
+        type.startsWith("text/") ||
+        /\.(txt|md|csv|json)$/i.test(name)
+      ) {
+        userContent.push({
+          type: "text",
           text:
-            `\n\nAttached file: ${name}\n` +
-            `---\n${data}\n---`
+            `\nAttached file: ${name}\n\n` +
+            content
         });
 
         continue;
       }
 
-      return res.status(400).json({
-        error:
-          `${name} is a binary document. ` +
-          `Text and images work right now; PDF/DOCX support comes next.`
+      // PDF / DOCX etc.
+      userContent.push({
+        type: "text",
+        text:
+          `The user attached a file named "${name}", ` +
+          `but this file type cannot currently be read.`
       });
     }
 
-    if (content.length === 0) {
-      content.push({
-        type: "input_text",
+    if (userContent.length === 0) {
+      userContent.push({
+        type: "text",
         text: "Hello"
       });
     }
 
-    const input = [];
+    const messages = [];
 
     if (instructions) {
-      input.push({
+      messages.push({
         role: "system",
         content: instructions
       });
+    } else {
+      messages.push({
+        role: "system",
+        content:
+          "You are LampAI. Be helpful, intelligent, direct, and natural."
+      });
     }
 
-    input.push({
+    messages.push({
       role: "user",
-      content
+      content: userContent
     });
 
-    const xaiResponse = await fetch(
-      "https://api.x.ai/v1/responses",
+    const response = await fetch(
+      GROQ_URL,
       {
         method: "POST",
 
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${apiKey}`
         },
 
         body: JSON.stringify({
           model: MODEL,
-          store: false,
-          input
+          messages,
+          temperature: 0.7,
+          max_completion_tokens: 2048
         })
       }
     );
 
-    const raw = await xaiResponse.text();
+    const raw =
+      await response.text();
 
-    let data = {};
+    let data;
 
     try {
-      data = raw ? JSON.parse(raw) : {};
+      data = JSON.parse(raw);
     } catch {
-      data = { raw };
+      data = null;
     }
 
-    if (!xaiResponse.ok) {
+    if (!response.ok) {
       console.error(
-        "xAI error:",
-        xaiResponse.status,
+        "Groq error:",
+        response.status,
         raw
       );
 
-      return res.status(xaiResponse.status).json({
-        error:
-          data?.error?.message ||
-          data?.message ||
-          raw ||
-          `xAI request failed (${xaiResponse.status}).`
-      });
+      return res
+        .status(response.status)
+        .json({
+          error:
+            data?.error?.message ||
+            raw ||
+            `Groq failed (${response.status}).`
+        });
     }
 
-    const reply = getReply(data);
+    const reply =
+      data?.choices?.[0]?.message?.content;
 
     if (!reply) {
-      console.error(
-        "No reply text from xAI:",
-        raw
-      );
-
       return res.status(502).json({
-        error: "xAI returned no readable reply."
+        error:
+          "Groq returned no response."
       });
     }
 
@@ -210,7 +221,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error(
-      "LampAI function error:",
+      "LampAI error:",
       error
     );
 
