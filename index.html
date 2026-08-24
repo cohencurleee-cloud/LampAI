@@ -1207,7 +1207,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => { updateAccountUI(sess
 // If the HTML is hosted on GitHub Pages, set this to your FULL Vercel URL,
 // for example: "https://your-project.vercel.app/api/chat".
 const CHAT_API_URL = "/api/chat";
-const VOICE_API_URL = CHAT_API_URL.replace(/\/api\/chat(?:\?.*)?$/, "/api/voice");
+const VOICE_API_URL = CHAT_API_URL;
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
