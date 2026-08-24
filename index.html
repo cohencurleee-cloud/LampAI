@@ -1,889 +1,1465 @@
-const GROQ = "https://api.groq.com/openai/v1";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07080a">
+<title>LampAI</title>
 
-const CHAT_MODEL = "qwen/qwen3.6-27b";
-const STT_MODEL = "whisper-large-v3-turbo";
-const TTS_MODEL = "canopylabs/orpheus-v1-english";
-const TTS_VOICE = "troy";
+<style>
+*{box-sizing:border-box}
 
-function clean(text = "") {
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#07080a;
+  color:#f5f5f5;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+}
+
+button,input,textarea{font:inherit}
+
+button{cursor:pointer}
+
+.app{
+  width:100%;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(circle at 50% -20%,rgba(255,255,255,.09),transparent 35%),
+    #07080a;
+}
+
+header{
+  height:62px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  backdrop-filter:blur(20px);
+  background:rgba(7,8,10,.75);
+}
+
+.logo{
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:-.4px;
+}
+
+.logo-dot{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  margin-right:7px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 14px rgba(255,255,255,.8);
+}
+
+.header-button{
+  position:absolute;
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.07);
+  color:#ddd;
+  display:grid;
+  place-items:center;
+  font-size:18px;
+}
+
+.header-button:active{
+  transform:scale(.92);
+}
+
+#newChat{
+  left:14px;
+}
+
+#settingsButton{
+  right:14px;
+}
+
+#chat{
+  flex:1;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:24px 16px 150px;
+  scroll-behavior:smooth;
+}
+
+#chat::-webkit-scrollbar{
+  display:none;
+}
+
+.welcome{
+  min-height:70%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:20px;
+}
+
+.lamp{
+  width:74px;
+  height:74px;
+  border-radius:24px;
+  display:grid;
+  place-items:center;
+  font-size:36px;
+  margin-bottom:22px;
+  background:linear-gradient(145deg,#ffffff,#9da3aa);
+  color:#08090a;
+  box-shadow:
+    0 0 35px rgba(255,255,255,.13),
+    inset 0 1px 1px rgba(255,255,255,.8);
+}
+
+.welcome h1{
+  margin:0;
+  font-size:31px;
+  letter-spacing:-1.3px;
+}
+
+.welcome p{
+  margin:9px 0 0;
+  color:#777d86;
+  font-size:15px;
+}
+
+.suggestions{
+  width:100%;
+  max-width:520px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:30px;
+}
+
+.suggestion{
+  text-align:left;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.045);
+  color:#ddd;
+  border-radius:16px;
+  padding:14px;
+  transition:.18s;
+}
+
+.suggestion:active{
+  transform:scale(.97);
+  background:rgba(255,255,255,.09);
+}
+
+.message{
+  width:min(820px,100%);
+  margin:0 auto 18px;
+  display:flex;
+  animation:appear .22s ease;
+}
+
+@keyframes appear{
+  from{opacity:0;transform:translateY(7px)}
+  to{opacity:1;transform:none}
+}
+
+.message.user{
+  justify-content:flex-end;
+}
+
+.bubble{
+  max-width:86%;
+  padding:12px 15px;
+  border-radius:20px;
+  line-height:1.5;
+  font-size:15px;
+  white-space:pre-wrap;
+}
+
+.user .bubble{
+  background:#f1f1f1;
+  color:#090909;
+  border-bottom-right-radius:6px;
+}
+
+.ai .bubble{
+  color:#e8e8e8;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+  border-bottom-left-radius:6px;
+}
+
+.thinking{
+  color:#777d86!important;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-width:58px;
+}
+
+.thinking-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#777d86;
+  opacity:.28;
+  animation:thinkingPulse 1s infinite ease-in-out;
+}
+
+.thinking-dot:nth-child(2){animation-delay:.15s}
+.thinking-dot:nth-child(3){animation-delay:.30s}
+
+@keyframes thinkingPulse{
+  0%,80%,100%{opacity:.25;transform:translateY(0)}
+  40%{opacity:1;transform:translateY(-3px)}
+}
+
+.bottom{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:10;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+  background:linear-gradient(transparent,#07080a 28%);
+}
+
+.composer{
+  width:min(820px,100%);
+  margin:auto;
+  min-height:64px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 10px 9px 12px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:25px;
+  background:rgba(20,21,24,.94);
+  backdrop-filter:blur(25px);
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+}
+
+#input{
+  min-width:0;
+  flex:1;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:white;
+  font-size:17px;
+}
+
+#input::placeholder{
+  color:#656a72;
+}
+
+.icon{
+  width:38px;
+  height:38px;
+  flex-shrink:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:#9298a1;
+  font-size:20px;
+}
+
+.send{
+  width:44px;
+  height:44px;
+  flex-shrink:0;
+  border:0;
+  border-radius:50%;
+  background:#fff;
+  color:#000;
+  font-size:17px;
+  font-weight:800;
+}
+
+.send:disabled{
+  opacity:.35;
+}
+
+.disclaimer{
+  text-align:center;
+  color:#4d5259;
+  font-size:10px;
+  margin-top:6px;
+}
+
+/* SETTINGS */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(7px);
+}
+
+.overlay.open{
+  display:flex;
+}
+
+.settings{
+  width:100%;
+  max-width:600px;
+  max-height:88dvh;
+  overflow:auto;
+  background:#111317;
+  border:1px solid rgba(255,255,255,.09);
+  border-bottom:0;
+  border-radius:28px 28px 0 0;
+  padding:18px 18px calc(24px + env(safe-area-inset-bottom));
+  animation:sheet .25s ease;
+}
+
+@keyframes sheet{
+  from{transform:translateY(100%)}
+  to{transform:none}
+}
+
+.handle{
+  width:38px;
+  height:4px;
+  border-radius:10px;
+  background:#41454b;
+  margin:0 auto 20px;
+}
+
+.settings h2{
+  margin:0;
+  font-size:22px;
+}
+
+.settings p{
+  color:#777d86;
+  font-size:14px;
+  line-height:1.45;
+}
+
+textarea{
+  width:100%;
+  min-height:145px;
+  resize:none;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.09);
+  outline:0;
+  background:#090a0c;
+  color:#fff;
+  font-size:15px;
+  line-height:1.45;
+}
+
+textarea:focus{
+  border-color:rgba(255,255,255,.25);
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+}
+
+.actions button{
+  flex:1;
+  height:48px;
+  border-radius:14px;
+  border:0;
+}
+
+.cancel{
+  background:#22252a;
+  color:#ddd;
+}
+
+.save{
+  background:#fff;
+  color:#000;
+  font-weight:700;
+}
+
+
+/* AUTH */
+.auth-overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(12px);
+}
+.auth-overlay.open{display:flex}
+.auth-card{
+  width:min(420px,100%);
+  background:#111317;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:24px;
+  padding:24px;
+  box-shadow:0 20px 70px rgba(0,0,0,.55);
+}
+.auth-card h2{
+  margin:0 0 7px;
+  font-size:25px;
+}
+.auth-card p{
+  margin:0 0 20px;
+  color:#777d86;
+  font-size:14px;
+  line-height:1.45;
+}
+.auth-field{
+  width:100%;
+  height:50px;
+  margin-top:10px;
+  padding:0 14px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;
+  outline:0;
+  background:#090a0c;
+  color:#fff;
+}
+.auth-field:focus{border-color:rgba(255,255,255,.3)}
+.auth-submit{
+  width:100%;
+  height:50px;
+  margin-top:14px;
+  border:0;
+  border-radius:14px;
+  background:#fff;
+  color:#000;
+  font-weight:700;
+}
+.auth-google{
+  width:100%;
+  height:50px;
+  margin-top:10px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;
+  background:#1b1d21;
+  color:#fff;
+  font-weight:600;
+}
+.auth-divider{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:14px 0 2px;
+  color:#666b73;
+  font-size:12px;
+}
+.auth-divider::before,.auth-divider::after{
+  content:"";
+  height:1px;
+  flex:1;
+  background:rgba(255,255,255,.08);
+}
+.auth-switch{
+  width:100%;
+  margin-top:13px;
+  border:0;
+  background:transparent;
+  color:#aaa;
+  font-size:13px;
+}
+.auth-close{
+  float:right;
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.07);
+  color:#ddd;
+}
+.auth-status{
+  min-height:20px;
+  margin-top:10px;
+  color:#aaa;
+  font-size:13px;
+  text-align:center;
+}
+
+
+.account-section{margin:0 0 24px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(255,255,255,.035)}.account-row{display:flex;align-items:center;gap:12px}.account-avatar{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#24272c;overflow:hidden}.account-avatar img{width:44px;height:44px;border-radius:50%;object-fit:cover}.account-info{min-width:0;display:flex;flex-direction:column;gap:3px}.account-info strong,.account-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-info strong{font-size:14px}.account-info span{font-size:12px;color:#777d86}.account-button{width:100%;height:44px;margin-top:12px;border:0;border-radius:13px;background:#fff;color:#000;font-weight:700}
+
+/* ATTACHMENTS */
+
+.attachments{
+  width:min(820px,100%);
+  margin:0 auto 8px;
+  padding:0 2px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:flex-end;
+}
+
+.attachment-preview{
+  position:relative;
+  flex:0 0 auto;
+}
+
+.image-preview{
+  width:76px;
+  height:76px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:15px;
+  background:#15171a;
+}
+
+.image-preview img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.file-preview{
+  max-width:220px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  padding:0 34px 0 12px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  background:#17191d;
+  color:#ddd;
+  font-size:12px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.remove-attachment{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:50%;
+  background:#2a2d32;
+  color:#fff;
+  font-size:14px;
+  line-height:1;
+}
+
+#attachMenu{
+  position:absolute;
+  left:max(12px,calc(50% - 410px));
+  bottom:82px;
+  z-index:25;
+  display:none;
+  width:126px;
+  padding:5px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;
+  background:#17191d;
+  box-shadow:0 12px 36px rgba(0,0,0,.5);
+}
+
+#attachMenu.open{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.attach-option{
+  width:100%;
+  height:35px;
+  padding:0 9px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#e5e5e5;
+  font-size:13px;
+  text-align:left;
+}
+
+.attach-option:active{
+  background:rgba(255,255,255,.08);
+}
+
+/* Sent attachment previews */
+.sent-attachments{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+
+.sent-image{
+  width:min(220px,58vw);
+  max-height:220px;
+  display:block;
+  object-fit:cover;
+  border-radius:13px;
+}
+
+.sent-file{
+  max-width:240px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:rgba(0,0,0,.12);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:12px;
+}
+
+.user-text{
+  white-space:pre-wrap;
+}
+
+/* PHONE */
+
+@media(max-width:600px){
+  header{
+    height:58px;
+  }
+
+  .welcome{
+    min-height:65%;
+  }
+
+  .lamp{
+    width:66px;
+    height:66px;
+    border-radius:21px;
+    font-size:31px;
+  }
+
+  .welcome h1{
+    font-size:28px;
+  }
+
+  .suggestions{
+    grid-template-columns:1fr;
+    max-width:390px;
+  }
+
+  .suggestion{
+    padding:13px;
+  }
+
+  .bubble{
+    max-width:90%;
+  }
+
+  #chat{
+    padding-left:12px;
+    padding-right:12px;
+  }
+
+  .image-preview{
+    width:68px;
+    height:68px;
+  }
+
+  #attachMenu{
+    left:12px;
+  }
+
+  .composer{
+    min-height:62px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <button class="header-button" id="newChat">+</button>
+
+  <div class="logo">
+    <span class="logo-dot"></span>
+    LampAI
+  </div>
+
+  <button class="header-button" id="settingsButton">⚙</button>
+</header>
+
+<div id="chat">
+
+  <div class="welcome">
+
+    <div class="lamp">L</div>
+
+    <h1>What can I help with?</h1>
+
+    <p>Ask me anything.</p>
+
+    <div class="suggestions">
+
+      <button class="suggestion" data-text="Give me some good ideas for a project">
+        Give me ideas
+      </button>
+
+      <button class="suggestion" data-text="Explain something complicated in simple words">
+        Explain something
+      </button>
+
+      <button class="suggestion" data-text="Help me solve a problem">
+        Help me solve something
+      </button>
+
+      <button class="suggestion" data-text="Write something creative for me">
+        Create something
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="bottom">
+  <div class="attachments" id="attachments"></div>
+  <div id="attachMenu">
+    <button type="button" class="attach-option" id="imageOption">Add image</button>
+    <button type="button" class="attach-option" id="fileOption">Add file</button>
+  </div>
+  <input id="imageInput" type="file" accept="image/*" multiple hidden>
+  <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.pdf,.doc,.docx" multiple hidden>
+
+  <form class="composer" id="form">
+
+    <button type="button" class="icon" id="attach">+</button>
+
+    <input
+      id="input"
+      type="text"
+      placeholder="Message LampAI..."
+      autocomplete="off"
+      enterkeyhint="send"
+    >
+
+    <button type="button" class="icon" id="micButton" aria-label="Voice input">🎙</button>
+
+    <button class="send" id="send" type="submit">↑</button>
+
+  </form>
+
+  <div class="disclaimer">
+    LampAI can make mistakes. Check important information.
+  </div>
+
+</div>
+
+</div>
+
+
+
+<!-- AUTH -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <button class="auth-close" id="authClose">×</button>
+    <h2 id="authTitle">Sign in to LampAI</h2>
+    <p id="authDescription">Sign in to keep your LampAI account and settings.</p>
+
+    <input class="auth-field" id="authEmail" type="email" placeholder="Email" autocomplete="email">
+    <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+
+    <button class="auth-google" id="googleAuth">Continue with Google</button>
+
+    <div class="auth-divider">or</div>
+
+    <button class="auth-submit" id="authSubmit">Sign In</button>
+    <button class="auth-switch" id="authSwitch">Need an account? Sign Up</button>
+    <div class="auth-status" id="authStatus"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+
+<div class="overlay" id="overlay">
+
+  <div class="settings">
+
+    <div class="handle"></div>
+
+    <div class="account-section"><div class="account-row"><div class="account-avatar" id="accountAvatar">👤</div><div class="account-info"><strong id="accountName">Not signed in</strong><span id="accountEmail">Sign in to use your account</span></div></div><button class="account-button" id="accountButton">Sign In</button></div><h2>Customize LampAI</h2>
+
+    <p>
+      Tell LampAI how you want it to talk and behave.
+      Keep it simple. You can change this whenever you want.
+    </p>
+
+    <textarea
+      id="instructions"
+      placeholder="Example: Talk naturally, keep answers short, be funny and sarcastic. Don't use emojis unless I use them."
+    ></textarea>
+
+    <div class="actions">
+
+      <button class="cancel" id="cancel">Cancel</button>
+
+      <button class="save" id="save">Save</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://oovmpejryqkyvcvpwncg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_PYK6F-mlPtkpBZvwW0_tfg_EJlatxqy";
+
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+const authOverlay = document.getElementById("authOverlay");
+const authButton = document.getElementById("authButton");
+const authClose = document.getElementById("authClose");
+const authTitle = document.getElementById("authTitle");
+const authDescription = document.getElementById("authDescription");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const authSubmit = document.getElementById("authSubmit");
+const authSwitch = document.getElementById("authSwitch");
+const authStatus = document.getElementById("authStatus");
+
+let authMode = "signin";
+
+function openAuth(mode = "signin") {
+  authMode = mode;
+  authTitle.textContent = mode === "signin"
+    ? "Sign in to LampAI"
+    : "Create your LampAI account";
+  authDescription.textContent = mode === "signin"
+    ? "Sign in to keep your LampAI account and settings."
+    : "Create an account with your email and password.";
+  authSubmit.textContent = mode === "signin" ? "Sign In" : "Sign Up";
+  authSwitch.textContent = mode === "signin"
+    ? "Need an account? Sign Up"
+    : "Already have an account? Sign In";
+  authStatus.textContent = "";
+  authOverlay.classList.add("open");
+  setTimeout(() => authEmail.focus(), 50);
+}
+
+function closeAuth() {
+  authOverlay.classList.remove("open");
+  authStatus.textContent = "";
+}
+
+const accountButton=document.getElementById("accountButton");const accountName=document.getElementById("accountName");const accountEmail=document.getElementById("accountEmail");const accountAvatar=document.getElementById("accountAvatar");async function updateAccountUI(session){if(session?.user){const email=session.user.email||"Signed in";accountName.textContent=session.user.user_metadata?.full_name||session.user.user_metadata?.name||email.split("@")[0];accountEmail.textContent=email;accountButton.textContent="Sign Out";const avatar=session.user.user_metadata?.avatar_url||session.user.user_metadata?.picture;accountAvatar.innerHTML=avatar?`<img src="${avatar}" alt="">`:"👤";}else{accountName.textContent="Not signed in";accountEmail.textContent="Sign in to use your account";accountButton.textContent="Sign In";accountAvatar.textContent="👤";}}accountButton.onclick=async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session){await supabaseClient.auth.signOut();updateAccountUI(null);}else openAuth("signin");};
+
+authClose.onclick = closeAuth;
+
+authOverlay.addEventListener("click", e => {
+  if (e.target === authOverlay) closeAuth();
+});
+
+authSwitch.onclick = () => {
+  openAuth(authMode === "signin" ? "signup" : "signin");
+};
+
+document.getElementById("googleAuth").onclick = async () => {
+  authStatus.textContent = "Opening Google...";
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: "https://cohencurleee-cloud.github.io/LAMPAI/"
+    }
+  });
+
+  if (error) {
+    authStatus.textContent = error.message || "Google sign-in failed.";
+  }
+};
+
+authSubmit.onclick = async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+
+  if (!email || !password) {
+    authStatus.textContent = "Enter your email and password.";
+    return;
+  }
+
+  if (password.length < 6) {
+    authStatus.textContent = "Password must be at least 6 characters.";
+    return;
+  }
+
+  authSubmit.disabled = true;
+  authStatus.textContent = authMode === "signin"
+    ? "Signing in..."
+    : "Creating account...";
+
+  try {
+    let result;
+
+    if (authMode === "signin") {
+      result = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+    } else {
+      result = await supabaseClient.auth.signUp({
+        email,
+        password
+      });
+    }
+
+    if (result.error) throw result.error;
+
+    if (authMode === "signup" && !result.data.session) {
+      authStatus.textContent =
+        "Account created. Check your email to confirm your account.";
+      return;
+    }
+
+    authStatus.textContent = "You're signed in.";
+    authOverlay.classList.remove("open");
+    authEmail.value = "";
+    authPassword.value = "";
+  } catch (error) {
+    authStatus.textContent = error.message || "Authentication failed.";
+  } finally {
+    authSubmit.disabled = false;
+  }
+};
+
+supabaseClient.auth.onAuthStateChange((event, session) => { updateAccountUI(session); });
+
+// Require a signed-in user before using LampAI.
+(async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  updateAccountUI(session);
+  if (!session) openAuth("signin");
+})();
+</script>
+
+<script>
+
+// If the HTML is hosted on Vercel with /api/chat, leave this as-is.
+// If the HTML is hosted on GitHub Pages, set this to your FULL Vercel URL,
+// for example: "https://your-project.vercel.app/api/chat".
+const CHAT_API_URL = "/api/chat";
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+const form = document.getElementById("form");
+const send = document.getElementById("send");
+const overlay = document.getElementById("overlay");
+const instructions = document.getElementById("instructions");
+const attach = document.getElementById("attach");
+const attachMenu = document.getElementById("attachMenu");
+const imageInput = document.getElementById("imageInput");
+const fileInput = document.getElementById("fileInput");
+const attachmentsEl = document.getElementById("attachments");
+let selectedAttachments = [];
+
+attach.onclick = e => { e.stopPropagation(); attachMenu.classList.toggle("open"); };
+document.getElementById("imageOption").onclick = () => { attachMenu.classList.remove("open"); imageInput.click(); };
+document.getElementById("fileOption").onclick = () => { attachMenu.classList.remove("open"); fileInput.click(); };
+document.addEventListener("click", e => { if (!attachMenu.contains(e.target) && e.target !== attach) attachMenu.classList.remove("open"); });
+function renderAttachments(){
+  attachmentsEl.innerHTML = "";
+
+  selectedAttachments.forEach((file,i) => {
+    const preview = document.createElement("div");
+    preview.className = "attachment-preview " + (file.type.startsWith("image/") ? "image-preview" : "file-preview");
+
+    if(file.type.startsWith("image/")){
+      const img = document.createElement("img");
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      img.alt = file.name;
+      img.onload = () => URL.revokeObjectURL(url);
+      preview.appendChild(img);
+    }else{
+      preview.title = file.name;
+      preview.appendChild(document.createTextNode(file.name));
+    }
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "remove-attachment";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", `Remove ${file.name}`);
+    remove.onclick = () => {
+      selectedAttachments.splice(i,1);
+      renderAttachments();
+    };
+
+    preview.appendChild(remove);
+    attachmentsEl.appendChild(preview);
+  });
+}
+
+function addFiles(files){
+  for(const file of files){
+    if(selectedAttachments.length >= 5) break;
+
+    const duplicate = selectedAttachments.some(
+      x => x.name === file.name && x.size === file.size && x.lastModified === file.lastModified
+    );
+
+    if(file.size > 3.2 * 1024 * 1024){
+      alert(`${file.name} is too large. Keep each attachment under about 3 MB for this web build.`);
+      continue;
+    }
+
+    if(!duplicate) selectedAttachments.push(file);
+  }
+
+  renderAttachments();
+}
+
+async function normalizeImageFile(file){
+  // Grok vision accepts JPEG/PNG. This also shrinks huge phone photos
+  // so the JSON request doesn't get wrecked by serverless body limits.
+  try{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+
+    await new Promise((resolve,reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = url;
+    });
+
+    const maxSide = 1600;
+    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+    const width = Math.max(1, Math.round(img.naturalWidth * scale));
+    const height = Math.max(1, Math.round(img.naturalHeight * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, width, height);
+    URL.revokeObjectURL(url);
+
+    const blob = await new Promise(resolve =>
+      canvas.toBlob(resolve, "image/jpeg", 0.84)
+    );
+
+    if(!blob) return file;
+
+    const cleanName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+    return new File([blob], cleanName, {
+      type: "image/jpeg",
+      lastModified: Date.now()
+    });
+  }catch{
+    return file;
+  }
+}
+
+imageInput.onchange = async e => {
+  const picked = [...e.target.files];
+  imageInput.value = "";
+
+  const normalized = [];
+  for(const file of picked){
+    normalized.push(await normalizeImageFile(file));
+  }
+
+  addFiles(normalized);
+};
+
+fileInput.onchange = e => {
+  addFiles([...e.target.files]);
+  fileInput.value = "";
+};
+
+function fileToDataURL(file){
+  return new Promise((resolve,reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function isTextFile(file){
+  return file.type.startsWith("text/") ||
+    /\.(txt|md|csv|json)$/i.test(file.name);
+}
+
+async function serializeAttachment(file){
+  const textFile = isTextFile(file);
+
+  return {
+    name: file.name,
+    type: file.type || "application/octet-stream",
+    size: file.size,
+    kind: file.type.startsWith("image/") ? "image" : "file",
+    encoding: textFile ? "text" : "data-url",
+    content: textFile ? await file.text() : await fileToDataURL(file)
+  };
+}
+
+
+instructions.value =
+  localStorage.getItem("lampai_instructions") || "";
+
+
+document.getElementById("settingsButton").onclick = () => {
+  overlay.classList.add("open");
+};
+
+document.getElementById("cancel").onclick = () => {
+  overlay.classList.remove("open");
+};
+
+document.getElementById("save").onclick = () => {
+
+  localStorage.setItem(
+    "lampai_instructions",
+    instructions.value.trim()
+  );
+
+  overlay.classList.remove("open");
+};
+
+
+overlay.addEventListener("click", e => {
+
+  if(e.target === overlay){
+    overlay.classList.remove("open");
+  }
+
+});
+
+
+document.getElementById("newChat").onclick = () => {
+
+  chat.innerHTML = `
+    <div class="welcome">
+
+      <div class="lamp">L</div>
+
+      <h1>What can I help with?</h1>
+
+      <p>Ask me anything.</p>
+
+      <div class="suggestions">
+
+        <button class="suggestion" data-text="Give me some good ideas for a project">
+          Give me ideas
+        </button>
+
+        <button class="suggestion" data-text="Explain something complicated in simple words">
+          Explain something
+        </button>
+
+        <button class="suggestion" data-text="Help me solve a problem">
+          Help me solve something
+        </button>
+
+        <button class="suggestion" data-text="Write something creative for me">
+          Create something
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  activateSuggestions();
+
+};
+
+
+function activateSuggestions(){
+
+  document.querySelectorAll(".suggestion").forEach(button => {
+
+    button.onclick = () => {
+
+      input.value = button.dataset.text;
+
+      input.focus();
+
+    };
+
+  });
+
+}
+
+
+activateSuggestions();
+
+
+function addMessage(text,type){
+
+  const wrapper = document.createElement("div");
+
+  wrapper.className = "message " + type;
+
+  const bubble = document.createElement("div");
+
+  bubble.className = "bubble";
+
+  bubble.textContent = text;
+
+  wrapper.appendChild(bubble);
+
+  chat.appendChild(wrapper);
+
+  chat.scrollTop = chat.scrollHeight;
+
+  return wrapper;
+
+}
+
+
+
+function addThinkingMessage(){
+  const wrapper = document.createElement("div");
+  wrapper.className = "message ai";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble thinking";
+
+  for(let i = 0; i < 3; i++){
+    const dot = document.createElement("span");
+    dot.className = "thinking-dot";
+    bubble.appendChild(dot);
+  }
+
+  wrapper.appendChild(bubble);
+  chat.appendChild(wrapper);
+  chat.scrollTop = chat.scrollHeight;
+
+  return wrapper;
+}
+
+function cleanDisplayText(text = ""){
   return String(text)
     .replace(/<think>[\s\S]*?<\/think>/gi, "")
     .replace(/<think>[\s\S]*/gi, "")
     .replace(/\*\*/g, "")
-    .replace(/\*/g, "")
+    .replace(/^\s*\*\s+/gm, "")
     .trim();
 }
 
-function stripVoiceTags(text = "") {
-  return clean(text)
-    .replace(/\[[^\]\n]{1,40}\]\s*/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+function typeAIMessage(text){
+  const cleaned = cleanDisplayText(text);
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "message ai";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  wrapper.appendChild(bubble);
+  chat.appendChild(wrapper);
+
+  const chunks = cleaned.match(/\S+\s*/g) || [cleaned];
+  let index = 0;
+
+  const timer = setInterval(() => {
+    if(index >= chunks.length){
+      clearInterval(timer);
+      return;
+    }
+
+    // A few words at a time feels fast without dumping the whole answer instantly.
+    const amount = Math.min(3, chunks.length - index);
+
+    for(let i = 0; i < amount; i++){
+      bubble.textContent += chunks[index++];
+    }
+
+    chat.scrollTop = chat.scrollHeight;
+  }, 32);
+
+  return wrapper;
 }
 
-async function jsonFrom(response) {
-  const raw = await response.text();
 
-  try {
-    return {
-      raw,
-      data: raw ? JSON.parse(raw) : {}
-    };
-  } catch {
-    return {
-      raw,
-      data: {}
-    };
+function addUserMessage(text, files){
+  const wrapper = document.createElement("div");
+  wrapper.className = "message user";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  if(files.length){
+    const sent = document.createElement("div");
+    sent.className = "sent-attachments";
+
+    files.forEach(file => {
+      if(file.type.startsWith("image/")){
+        const img = document.createElement("img");
+        const url = URL.createObjectURL(file);
+        img.className = "sent-image";
+        img.src = url;
+        img.alt = file.name;
+        img.onload = () => URL.revokeObjectURL(url);
+        sent.appendChild(img);
+      }else{
+        const fileEl = document.createElement("div");
+        fileEl.className = "sent-file";
+        fileEl.textContent = file.name;
+        fileEl.title = file.name;
+        sent.appendChild(fileEl);
+      }
+    });
+
+    bubble.appendChild(sent);
   }
+
+  if(text){
+    const textEl = document.createElement("div");
+    textEl.className = "user-text";
+    textEl.textContent = text;
+    bubble.appendChild(textEl);
+  }
+
+  wrapper.appendChild(bubble);
+  chat.appendChild(wrapper);
+  chat.scrollTop = chat.scrollHeight;
+
+  return wrapper;
 }
 
-async function callChat(
-  apiKey,
-  messages,
-  maxTokens = 700,
-  temperature = 0.7
-) {
-  const response = await fetch(
-    `${GROQ}/chat/completions`,
-    {
-      method: "POST",
 
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
+form.addEventListener("submit", async e => {
+
+  e.preventDefault();
+
+  const text = input.value.trim();
+  const outgoingAttachments = [...selectedAttachments];
+
+  if(!text && outgoingAttachments.length === 0) return;
+
+
+  const welcome = document.querySelector(".welcome");
+
+  if(welcome) welcome.remove();
+
+
+  addUserMessage(text, outgoingAttachments);
+
+  input.value = "";
+
+  input.disabled = true;
+
+  send.disabled = true;
+
+
+  const thinking = addThinkingMessage();
+
+
+  try{
+
+    if(location.hostname.endsWith("github.io") && CHAT_API_URL.startsWith("/")){
+      throw new Error(
+        "LampAI is on GitHub Pages, but CHAT_API_URL still points to /api/chat. " +
+        "Set CHAT_API_URL to the full Vercel API URL."
+      );
+    }
+
+    const response = await fetch(CHAT_API_URL,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
       },
 
-      body: JSON.stringify({
-        model: CHAT_MODEL,
-        messages,
-        reasoning_effort: "none",
-        reasoning_format: "hidden",
-        temperature,
-        top_p: 0.85,
-        max_completion_tokens: maxTokens
+      body:JSON.stringify({
+        message:text,
+        instructions: localStorage.getItem("lampai_instructions") || "",
+        attachments: await Promise.all(outgoingAttachments.map(serializeAttachment))
       })
-    }
-  );
 
-  const parsed = await jsonFrom(response);
+    });
 
-  if (!response.ok) {
-    throw new Error(
-      parsed.data?.error?.message ||
-      parsed.raw ||
-      `Groq chat failed (${response.status})`
-    );
-  }
 
-  return clean(
-    parsed.data?.choices?.[0]?.message?.content || ""
-  );
-}
+    const raw = await response.text();
+    let data = {};
 
-function decodeDataUrl(dataUrl) {
-  const match =
-    /^data:([^;,]+)?(;base64)?,(.*)$/s.exec(
-      dataUrl || ""
-    );
-
-  if (!match) {
-    throw new Error("Invalid audio data");
-  }
-
-  const mimeType =
-    match[1] || "audio/mp4";
-
-  const payload =
-    match[3] || "";
-
-  if (!match[2]) {
-    return {
-      mimeType,
-
-      bytes:
-        new TextEncoder().encode(
-          decodeURIComponent(payload)
-        )
-    };
-  }
-
-  return {
-    mimeType,
-
-    bytes:
-      new Uint8Array(
-        Buffer.from(
-          payload,
-          "base64"
-        )
-      )
-  };
-}
-
-async function voiceTranscribe(
-  res,
-  apiKey,
-  body
-) {
-  try {
-    if (!body.audio) {
-      return res.status(400).json({
-        error:
-          "No microphone audio received.",
-
-        stage:
-          "transcribe"
-      });
+    try{
+      data = raw ? JSON.parse(raw) : {};
+    }catch{
+      data = { error: raw || "The server returned an invalid response." };
     }
 
-    const {
-      mimeType,
-      bytes
-    } = decodeDataUrl(
-      body.audio
+    thinking.remove();
+
+
+    if(!response.ok){
+
+      addMessage(
+        cleanDisplayText(data.error || "Something went wrong."),
+        "ai"
+      );
+
+      return;
+
+    }
+
+
+    typeAIMessage(
+      data.reply || "I didn't get a response."
     );
 
-    if (
-      bytes.byteLength >
-      3000000
-    ) {
-      return res.status(413).json({
-        error:
-          "Voice turn is too long.",
+    selectedAttachments = [];
+    renderAttachments();
 
-        stage:
-          "transcribe"
-      });
-    }
 
-    const form =
-      new FormData();
+  }catch(error){
 
-    form.append(
-      "file",
+    thinking.remove();
 
-      new Blob(
-        [bytes],
-        {
-          type: mimeType
-        }
-      ),
-
-      body.filename ||
-      "voice.m4a"
+    addMessage(
+      cleanDisplayText(error?.message || "I couldn't connect right now."),
+      "ai"
     );
 
-    form.append(
-      "model",
-      STT_MODEL
-    );
+  }finally{
 
-    form.append(
-      "language",
-      "en"
-    );
+    input.disabled = false;
 
-    form.append(
-      "response_format",
-      "json"
-    );
+    send.disabled = false;
 
-    const response =
-      await fetch(
-        `${GROQ}/audio/transcriptions`,
-        {
-          method:
-            "POST",
+    input.focus();
 
-          headers: {
-            Authorization:
-              `Bearer ${apiKey}`
-          },
-
-          body:
-            form
-        }
-      );
-
-    const parsed =
-      await jsonFrom(
-        response
-      );
-
-    if (!response.ok) {
-      return res
-        .status(
-          response.status
-        )
-        .json({
-          error:
-            parsed.data
-              ?.error
-              ?.message ||
-            parsed.raw ||
-            "Transcription failed.",
-
-          stage:
-            "transcribe"
-        });
-    }
-
-    const transcript =
-      String(
-        parsed.data?.text ||
-        ""
-      ).trim();
-
-    if (!transcript) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "I couldn't hear any words.",
-
-          stage:
-            "transcribe"
-        });
-    }
-
-    return res
-      .status(200)
-      .json({
-        transcript,
-
-        stage:
-          "transcribe"
-      });
-
-  } catch (error) {
-    return res
-      .status(500)
-      .json({
-        error:
-          error.message ||
-          "Transcription crashed.",
-
-        stage:
-          "transcribe"
-      });
-  }
-}
-
-async function voiceReply(
-  res,
-  apiKey,
-  body
-) {
-  try {
-    const transcript =
-      String(
-        body.transcript ||
-        ""
-      ).trim();
-
-    const instructions =
-      String(
-        body.instructions ||
-        ""
-      ).trim();
-
-    if (!transcript) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Missing transcript.",
-
-          stage:
-            "reply"
-        });
-    }
-
-    const history =
-      Array.isArray(
-        body.history
-      )
-        ? body.history
-            .slice(-10)
-            .filter(
-              x =>
-                x &&
-                [
-                  "user",
-                  "assistant"
-                ].includes(
-                  x.role
-                ) &&
-                typeof x.content ===
-                  "string"
-            )
-        : [];
-
-    const system = `
-You are LampAI in live voice mode.
-
-Talk like a real person on a voice call.
-
-Keep replies short and conversational.
-
-Usually answer in one or two sentences.
-
-Never use markdown.
-
-Never use bullets.
-
-Never use headings.
-
-Never use asterisks.
-
-Never output <think> tags.
-
-Never reveal hidden reasoning.
-
-You may occasionally use natural fillers like:
-uh
-hmm
-yeah
-well
-
-A tiny stutter is okay occasionally.
-
-Do not overdo it.
-
-You may optionally start with one voice direction such as:
-
-[warm]
-[breathy]
-[whisper]
-[sarcastic]
-[exasperated sigh]
-
-Most replies should use no direction.
-
-${
-  instructions
-    ? `User customization:\n${instructions}`
-    : ""
-}
-`;
-
-    const rawReply =
-      await callChat(
-        apiKey,
-
-        [
-          {
-            role:
-              "system",
-
-            content:
-              system
-          },
-
-          ...history,
-
-          {
-            role:
-              "user",
-
-            content:
-              transcript
-          }
-        ],
-
-        120,
-
-        0.8
-      );
-
-    const reply =
-      stripVoiceTags(
-        rawReply
-      );
-
-    if (!reply) {
-      return res
-        .status(502)
-        .json({
-          error:
-            "LampAI returned no reply.",
-
-          stage:
-            "reply"
-        });
-    }
-
-    const direction =
-      rawReply.match(
-        /\[[^\]\n]{1,40}\]/
-      )?.[0] || "";
-
-    const speechText =
-      `${
-        direction
-          ? direction + " "
-          : ""
-      }${reply}`
-        .trim()
-        .slice(
-          0,
-          195
-        );
-
-    return res
-      .status(200)
-      .json({
-        reply,
-
-        speech_text:
-          speechText,
-
-        stage:
-          "reply"
-      });
-
-  } catch (error) {
-    return res
-      .status(500)
-      .json({
-        error:
-          error.message ||
-          "Reply failed.",
-
-        stage:
-          "reply"
-      });
-  }
-}
-
-async function voiceSpeak(
-  res,
-  apiKey,
-  body
-) {
-  try {
-    const input =
-      String(
-        body.speech_text ||
-        body.text ||
-        ""
-      )
-        .trim()
-        .slice(
-          0,
-          195
-        );
-
-    if (!input) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Missing speech text.",
-
-          stage:
-            "speak"
-        });
-    }
-
-    const response =
-      await fetch(
-        `${GROQ}/audio/speech`,
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            Authorization:
-              `Bearer ${apiKey}`
-          },
-
-          body:
-            JSON.stringify({
-              model:
-                TTS_MODEL,
-
-              voice:
-                TTS_VOICE,
-
-              input,
-
-              response_format:
-                "wav"
-            })
-        }
-      );
-
-    if (!response.ok) {
-      const raw =
-        await response.text();
-
-      return res
-        .status(200)
-        .json({
-          audio:
-            "",
-
-          warning:
-            raw ||
-            "TTS unavailable",
-
-          stage:
-            "speak"
-        });
-    }
-
-    const audio =
-      Buffer.from(
-        await response.arrayBuffer()
-      ).toString(
-        "base64"
-      );
-
-    return res
-      .status(200)
-      .json({
-        audio,
-
-        stage:
-          "speak"
-      });
-
-  } catch (error) {
-    return res
-      .status(200)
-      .json({
-        audio:
-          "",
-
-        warning:
-          error.message ||
-          "TTS unavailable",
-
-        stage:
-          "speak"
-      });
-  }
-}
-
-async function normalChat(
-  res,
-  apiKey,
-  body
-) {
-  try {
-    const message =
-      String(
-        body.message ||
-        ""
-      ).trim();
-
-    const instructions =
-      String(
-        body.instructions ||
-        ""
-      ).trim();
-
-    const attachments =
-      Array.isArray(
-        body.attachments
-      )
-        ? body.attachments.slice(
-            0,
-            5
-          )
-        : [];
-
-    if (
-      !message &&
-      attachments.length === 0
-    ) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Send a message, image, or file."
-        });
-    }
-
-    const content =
-      [];
-
-    if (message) {
-      content.push({
-        type:
-          "text",
-
-        text:
-          message
-      });
-    }
-
-    for (
-      const file of attachments
-    ) {
-      const name =
-        String(
-          file?.name ||
-          "attachment"
-        );
-
-      const type =
-        String(
-          file?.type ||
-          ""
-        );
-
-      const value =
-        typeof file?.content ===
-          "string"
-          ? file.content
-          : "";
-
-      if (!value) {
-        continue;
-      }
-
-      if (
-        type.startsWith(
-          "image/"
-        ) &&
-        value.startsWith(
-          "data:image/"
-        )
-      ) {
-        content.push({
-          type:
-            "image_url",
-
-          image_url: {
-            url:
-              value
-          }
-        });
-
-        continue;
-      }
-
-      if (
-        file.encoding ===
-          "text" ||
-        type.startsWith(
-          "text/"
-        ) ||
-        /\.(txt|md|csv|json)$/i.test(
-          name
-        )
-      ) {
-        content.push({
-          type:
-            "text",
-
-          text:
-            `Attached file: ${name}\n\n${value}`
-        });
-
-        continue;
-      }
-
-      content.push({
-        type:
-          "text",
-
-        text:
-          `The user attached ${name}, but this file type cannot currently be read.`
-      });
-    }
-
-    const system = `
-You are LampAI.
-
-Answer naturally and directly.
-
-Usually respond in 1 to 4 short sentences.
-
-Never reveal private reasoning.
-
-Never output <think> tags.
-
-Do not use markdown asterisks.
-
-Do not add unnecessary headings.
-
-${
-  instructions
-    ? `User customization:\n${instructions}`
-    : ""
-}
-`;
-
-    const reply =
-      await callChat(
-        apiKey,
-
-        [
-          {
-            role:
-              "system",
-
-            content:
-              system
-          },
-
-          {
-            role:
-              "user",
-
-            content
-          }
-        ]
-      );
-
-    if (!reply) {
-      return res
-        .status(502)
-        .json({
-          error:
-            "Groq returned no response."
-        });
-    }
-
-    return res
-      .status(200)
-      .json({
-        reply
-      });
-
-  } catch (error) {
-    return res
-      .status(500)
-      .json({
-        error:
-          error.message ||
-          "Chat failed."
-      });
-  }
-}
-
-export default async function handler(
-  req,
-  res
-) {
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "*"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, OPTIONS"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type"
-  );
-
-  if (
-    req.method ===
-    "OPTIONS"
-  ) {
-    return res
-      .status(204)
-      .end();
   }
 
-  if (
-    req.method !==
-    "POST"
-  ) {
-    return res
-      .status(405)
-      .json({
-        error:
-          "Method not allowed"
-      });
-  }
+});
 
-  try {
-    const apiKey =
-      process.env
-        .GROQ_API_KEY;
+</script>
 
-    if (!apiKey) {
-      return res
-        .status(500)
-        .json({
-          error:
-            "Missing GROQ_API_KEY in Vercel."
-        });
-    }
-
-    const body =
-      typeof req.body ===
-        "string"
-        ? JSON.parse(
-            req.body
-          )
-        : (
-            req.body ||
-            {}
-          );
-
-    if (
-      body.action ===
-      "voice_transcribe"
-    ) {
-      return voiceTranscribe(
-        res,
-        apiKey,
-        body
-      );
-    }
-
-    if (
-      body.action ===
-      "voice_reply"
-    ) {
-      return voiceReply(
-        res,
-        apiKey,
-        body
-      );
-    }
-
-    if (
-      body.action ===
-      "voice_speak"
-    ) {
-      return voiceSpeak(
-        res,
-        apiKey,
-        body
-      );
-    }
-
-    return normalChat(
-      res,
-      apiKey,
-      body
-    );
-
-  } catch (error) {
-    console.error(
-      "LampAI fatal error:",
-      error
-    );
-
-    return res
-      .status(500)
-      .json({
-        error:
-          error.message ||
-          "Server error."
-      });
-  }
-}
+</body>
+</html>
