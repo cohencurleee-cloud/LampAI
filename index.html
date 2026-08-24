@@ -370,6 +370,85 @@ textarea:focus{
   font-weight:700;
 }
 
+
+/* AUTH */
+.auth-overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(12px);
+}
+.auth-overlay.open{display:flex}
+.auth-card{
+  width:min(420px,100%);
+  background:#111317;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:24px;
+  padding:24px;
+  box-shadow:0 20px 70px rgba(0,0,0,.55);
+}
+.auth-card h2{
+  margin:0 0 7px;
+  font-size:25px;
+}
+.auth-card p{
+  margin:0 0 20px;
+  color:#777d86;
+  font-size:14px;
+  line-height:1.45;
+}
+.auth-field{
+  width:100%;
+  height:50px;
+  margin-top:10px;
+  padding:0 14px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;
+  outline:0;
+  background:#090a0c;
+  color:#fff;
+}
+.auth-field:focus{border-color:rgba(255,255,255,.3)}
+.auth-submit{
+  width:100%;
+  height:50px;
+  margin-top:14px;
+  border:0;
+  border-radius:14px;
+  background:#fff;
+  color:#000;
+  font-weight:700;
+}
+.auth-switch{
+  width:100%;
+  margin-top:13px;
+  border:0;
+  background:transparent;
+  color:#aaa;
+  font-size:13px;
+}
+.auth-close{
+  float:right;
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.07);
+  color:#ddd;
+}
+.auth-status{
+  min-height:20px;
+  margin-top:10px;
+  color:#aaa;
+  font-size:13px;
+  text-align:center;
+}
+
 /* PHONE */
 
 @media(max-width:600px){
@@ -425,6 +504,7 @@ textarea:focus{
     LampAI
   </div>
 
+  <button class="header-button auth-header-button" id="authButton">👤</button>
   <button class="header-button" id="settingsButton">⚙</button>
 </header>
 
@@ -491,6 +571,23 @@ textarea:focus{
 </div>
 
 
+
+<!-- AUTH -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <button class="auth-close" id="authClose">×</button>
+    <h2 id="authTitle">Sign in to LampAI</h2>
+    <p id="authDescription">Sign in to keep your LampAI account and settings.</p>
+
+    <input class="auth-field" id="authEmail" type="email" placeholder="Email" autocomplete="email">
+    <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+
+    <button class="auth-submit" id="authSubmit">Sign In</button>
+    <button class="auth-switch" id="authSwitch">Need an account? Sign Up</button>
+    <div class="auth-status" id="authStatus"></div>
+  </div>
+</div>
+
 <!-- SETTINGS -->
 
 <div class="overlay" id="overlay">
@@ -523,6 +620,144 @@ textarea:focus{
 
 </div>
 
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://oovmpejryqkyvcvpwncg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_PYK6F-mlPtkpBZvwW0_tfg_EJlatxqy";
+
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+const authOverlay = document.getElementById("authOverlay");
+const authButton = document.getElementById("authButton");
+const authClose = document.getElementById("authClose");
+const authTitle = document.getElementById("authTitle");
+const authDescription = document.getElementById("authDescription");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const authSubmit = document.getElementById("authSubmit");
+const authSwitch = document.getElementById("authSwitch");
+const authStatus = document.getElementById("authStatus");
+
+let authMode = "signin";
+
+function openAuth(mode = "signin") {
+  authMode = mode;
+  authTitle.textContent = mode === "signin"
+    ? "Sign in to LampAI"
+    : "Create your LampAI account";
+  authDescription.textContent = mode === "signin"
+    ? "Sign in to keep your LampAI account and settings."
+    : "Create an account with your email and password.";
+  authSubmit.textContent = mode === "signin" ? "Sign In" : "Sign Up";
+  authSwitch.textContent = mode === "signin"
+    ? "Need an account? Sign Up"
+    : "Already have an account? Sign In";
+  authStatus.textContent = "";
+  authOverlay.classList.add("open");
+  setTimeout(() => authEmail.focus(), 50);
+}
+
+function closeAuth() {
+  authOverlay.classList.remove("open");
+  authStatus.textContent = "";
+}
+
+authButton.onclick = async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (session) {
+    const confirmed = confirm("Sign out of LampAI?");
+    if (confirmed) {
+      await supabaseClient.auth.signOut();
+      authButton.textContent = "👤";
+    }
+  } else {
+    openAuth("signin");
+  }
+};
+
+authClose.onclick = closeAuth;
+
+authOverlay.addEventListener("click", e => {
+  if (e.target === authOverlay) closeAuth();
+});
+
+authSwitch.onclick = () => {
+  openAuth(authMode === "signin" ? "signup" : "signin");
+};
+
+authSubmit.onclick = async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+
+  if (!email || !password) {
+    authStatus.textContent = "Enter your email and password.";
+    return;
+  }
+
+  if (password.length < 6) {
+    authStatus.textContent = "Password must be at least 6 characters.";
+    return;
+  }
+
+  authSubmit.disabled = true;
+  authStatus.textContent = authMode === "signin"
+    ? "Signing in..."
+    : "Creating account...";
+
+  try {
+    let result;
+
+    if (authMode === "signin") {
+      result = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+    } else {
+      result = await supabaseClient.auth.signUp({
+        email,
+        password
+      });
+    }
+
+    if (result.error) throw result.error;
+
+    if (authMode === "signup" && !result.data.session) {
+      authStatus.textContent =
+        "Account created. Check your email to confirm your account.";
+      return;
+    }
+
+    authStatus.textContent = "You're signed in.";
+    authOverlay.classList.remove("open");
+    authEmail.value = "";
+    authPassword.value = "";
+  } catch (error) {
+    authStatus.textContent = error.message || "Authentication failed.";
+  } finally {
+    authSubmit.disabled = false;
+  }
+};
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  authButton.textContent = session ? "✓" : "👤";
+});
+
+// Require a signed-in user before using LampAI.
+(async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    openAuth("signin");
+  }
+})();
+</script>
 
 <script>
 
