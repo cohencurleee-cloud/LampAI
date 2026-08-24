@@ -424,6 +424,30 @@ textarea:focus{
   color:#000;
   font-weight:700;
 }
+.auth-google{
+  width:100%;
+  height:50px;
+  margin-top:10px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;
+  background:#1b1d21;
+  color:#fff;
+  font-weight:600;
+}
+.auth-divider{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:14px 0 2px;
+  color:#666b73;
+  font-size:12px;
+}
+.auth-divider::before,.auth-divider::after{
+  content:"";
+  height:1px;
+  flex:1;
+  background:rgba(255,255,255,.08);
+}
 .auth-switch{
   width:100%;
   margin-top:13px;
@@ -582,6 +606,10 @@ textarea:focus{
     <input class="auth-field" id="authEmail" type="email" placeholder="Email" autocomplete="email">
     <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
 
+    <button class="auth-google" id="googleAuth">Continue with Google</button>
+
+    <div class="auth-divider">or</div>
+
     <button class="auth-submit" id="authSubmit">Sign In</button>
     <button class="auth-switch" id="authSwitch">Need an account? Sign Up</button>
     <div class="auth-status" id="authStatus"></div>
@@ -690,6 +718,20 @@ authOverlay.addEventListener("click", e => {
 
 authSwitch.onclick = () => {
   openAuth(authMode === "signin" ? "signup" : "signin");
+};
+
+document.getElementById("googleAuth").onclick = async () => {
+  authStatus.textContent = "Opening Google...";
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+
+  if (error) {
+    authStatus.textContent = error.message || "Google sign-in failed.";
+  }
 };
 
 authSubmit.onclick = async () => {
