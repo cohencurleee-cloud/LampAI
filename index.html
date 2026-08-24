@@ -391,8 +391,8 @@ textarea:focus{
   font-weight:700;
 }
 
-
 /* AUTH */
+
 .auth-overlay{
   position:fixed;
   inset:0;
@@ -404,7 +404,11 @@ textarea:focus{
   background:rgba(0,0,0,.78);
   backdrop-filter:blur(12px);
 }
-.auth-overlay.open{display:flex}
+
+.auth-overlay.open{
+  display:flex;
+}
+
 .auth-card{
   width:min(420px,100%);
   background:#111317;
@@ -413,16 +417,19 @@ textarea:focus{
   padding:24px;
   box-shadow:0 20px 70px rgba(0,0,0,.55);
 }
+
 .auth-card h2{
   margin:0 0 7px;
   font-size:25px;
 }
+
 .auth-card p{
   margin:0 0 20px;
   color:#777d86;
   font-size:14px;
   line-height:1.45;
 }
+
 .auth-field{
   width:100%;
   height:50px;
@@ -434,7 +441,11 @@ textarea:focus{
   background:#090a0c;
   color:#fff;
 }
-.auth-field:focus{border-color:rgba(255,255,255,.3)}
+
+.auth-field:focus{
+  border-color:rgba(255,255,255,.3)
+}
+
 .auth-submit{
   width:100%;
   height:50px;
@@ -445,6 +456,7 @@ textarea:focus{
   color:#000;
   font-weight:700;
 }
+
 .auth-google{
   width:100%;
   height:50px;
@@ -455,6 +467,7 @@ textarea:focus{
   color:#fff;
   font-weight:600;
 }
+
 .auth-divider{
   display:flex;
   align-items:center;
@@ -463,12 +476,15 @@ textarea:focus{
   color:#666b73;
   font-size:12px;
 }
-.auth-divider::before,.auth-divider::after{
+
+.auth-divider::before,
+.auth-divider::after{
   content:"";
   height:1px;
   flex:1;
   background:rgba(255,255,255,.08);
 }
+
 .auth-switch{
   width:100%;
   margin-top:13px;
@@ -477,6 +493,7 @@ textarea:focus{
   color:#aaa;
   font-size:13px;
 }
+
 .auth-close{
   float:right;
   width:32px;
@@ -486,6 +503,7 @@ textarea:focus{
   background:rgba(255,255,255,.07);
   color:#ddd;
 }
+
 .auth-status{
   min-height:20px;
   margin-top:10px;
@@ -494,8 +512,70 @@ textarea:focus{
   text-align:center;
 }
 
+.account-section{
+  margin:0 0 24px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  background:rgba(255,255,255,.035);
+}
 
-.account-section{margin:0 0 24px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(255,255,255,.035)}.account-row{display:flex;align-items:center;gap:12px}.account-avatar{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#24272c;overflow:hidden}.account-avatar img{width:44px;height:44px;border-radius:50%;object-fit:cover}.account-info{min-width:0;display:flex;flex-direction:column;gap:3px}.account-info strong,.account-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-info strong{font-size:14px}.account-info span{font-size:12px;color:#777d86}.account-button{width:100%;height:44px;margin-top:12px;border:0;border-radius:13px;background:#fff;color:#000;font-weight:700}
+.account-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.account-avatar{
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#24272c;
+  overflow:hidden;
+}
+
+.account-avatar img{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.account-info{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+
+.account-info strong,
+.account-info span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.account-info strong{
+  font-size:14px;
+}
+
+.account-info span{
+  font-size:12px;
+  color:#777d86;
+}
+
+.account-button{
+  width:100%;
+  height:44px;
+  margin-top:12px;
+  border:0;
+  border-radius:13px;
+  background:#fff;
+  color:#000;
+  font-weight:700;
+}
 
 /* ATTACHMENTS */
 
@@ -599,7 +679,6 @@ textarea:focus{
   background:rgba(255,255,255,.08);
 }
 
-/* Sent attachment previews */
 .sent-attachments{
   display:flex;
   gap:7px;
@@ -630,9 +709,8 @@ textarea:focus{
   white-space:pre-wrap;
 }
 
-/* PHONE */
-
 @media(max-width:600px){
+
   header{
     height:58px;
   }
@@ -692,14 +770,26 @@ textarea:focus{
 <div class="app">
 
 <header>
-  <button class="header-button" id="newChat">+</button>
+
+  <button
+    class="header-button"
+    id="newChat"
+  >
+    +
+  </button>
 
   <div class="logo">
     <span class="logo-dot"></span>
     LampAI
   </div>
 
-  <button class="header-button" id="settingsButton">⚙</button>
+  <button
+    class="header-button"
+    id="settingsButton"
+  >
+    ⚙
+  </button>
+
 </header>
 
 <div id="chat">
@@ -708,25 +798,41 @@ textarea:focus{
 
     <div class="lamp">L</div>
 
-    <h1>What can I help with?</h1>
+    <h1>
+      What can I help with?
+    </h1>
 
-    <p>Ask me anything.</p>
+    <p>
+      Ask me anything.
+    </p>
 
     <div class="suggestions">
 
-      <button class="suggestion" data-text="Give me some good ideas for a project">
+      <button
+        class="suggestion"
+        data-text="Give me some good ideas for a project"
+      >
         Give me ideas
       </button>
 
-      <button class="suggestion" data-text="Explain something complicated in simple words">
+      <button
+        class="suggestion"
+        data-text="Explain something complicated in simple words"
+      >
         Explain something
       </button>
 
-      <button class="suggestion" data-text="Help me solve a problem">
+      <button
+        class="suggestion"
+        data-text="Help me solve a problem"
+      >
         Help me solve something
       </button>
 
-      <button class="suggestion" data-text="Write something creative for me">
+      <button
+        class="suggestion"
+        data-text="Write something creative for me"
+      >
         Create something
       </button>
 
@@ -737,17 +843,60 @@ textarea:focus{
 </div>
 
 <div class="bottom">
-  <div class="attachments" id="attachments"></div>
+
+  <div
+    class="attachments"
+    id="attachments"
+  ></div>
+
   <div id="attachMenu">
-    <button type="button" class="attach-option" id="imageOption">Add image</button>
-    <button type="button" class="attach-option" id="fileOption">Add file</button>
+
+    <button
+      type="button"
+      class="attach-option"
+      id="imageOption"
+    >
+      Add image
+    </button>
+
+    <button
+      type="button"
+      class="attach-option"
+      id="fileOption"
+    >
+      Add file
+    </button>
+
   </div>
-  <input id="imageInput" type="file" accept="image/*" multiple hidden>
-  <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.pdf,.doc,.docx" multiple hidden>
 
-  <form class="composer" id="form">
+  <input
+    id="imageInput"
+    type="file"
+    accept="image/*"
+    multiple
+    hidden
+  >
 
-    <button type="button" class="icon" id="attach">+</button>
+  <input
+    id="fileInput"
+    type="file"
+    accept=".txt,.md,.csv,.json,.pdf,.doc,.docx"
+    multiple
+    hidden
+  >
+
+  <form
+    class="composer"
+    id="form"
+  >
+
+    <button
+      type="button"
+      class="icon"
+      id="attach"
+    >
+      +
+    </button>
 
     <input
       id="input"
@@ -757,9 +906,22 @@ textarea:focus{
       enterkeyhint="send"
     >
 
-    <button type="button" class="icon" id="micButton" aria-label="Voice input">🎙</button>
+    <button
+      type="button"
+      class="icon"
+      id="micButton"
+      aria-label="Voice input"
+    >
+      🎙
+    </button>
 
-    <button class="send" id="send" type="submit">↑</button>
+    <button
+      class="send"
+      id="send"
+      type="submit"
+    >
+      ↑
+    </button>
 
   </form>
 
@@ -771,37 +933,128 @@ textarea:focus{
 
 </div>
 
-
-
 <!-- AUTH -->
-<div class="auth-overlay" id="authOverlay">
+
+<div
+  class="auth-overlay"
+  id="authOverlay"
+>
+
   <div class="auth-card">
-    <button class="auth-close" id="authClose">×</button>
-    <h2 id="authTitle">Sign in to LampAI</h2>
-    <p id="authDescription">Sign in to keep your LampAI account and settings.</p>
 
-    <input class="auth-field" id="authEmail" type="email" placeholder="Email" autocomplete="email">
-    <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+    <button
+      class="auth-close"
+      id="authClose"
+    >
+      ×
+    </button>
 
-    <button class="auth-google" id="googleAuth">Continue with Google</button>
+    <h2 id="authTitle">
+      Sign in to LampAI
+    </h2>
 
-    <div class="auth-divider">or</div>
+    <p id="authDescription">
+      Sign in to keep your LampAI account and settings.
+    </p>
 
-    <button class="auth-submit" id="authSubmit">Sign In</button>
-    <button class="auth-switch" id="authSwitch">Need an account? Sign Up</button>
-    <div class="auth-status" id="authStatus"></div>
+    <input
+      class="auth-field"
+      id="authEmail"
+      type="email"
+      placeholder="Email"
+      autocomplete="email"
+    >
+
+    <input
+      class="auth-field"
+      id="authPassword"
+      type="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    >
+
+    <button
+      class="auth-google"
+      id="googleAuth"
+    >
+      Continue with Google
+    </button>
+
+    <div class="auth-divider">
+      or
+    </div>
+
+    <button
+      class="auth-submit"
+      id="authSubmit"
+    >
+      Sign In
+    </button>
+
+    <button
+      class="auth-switch"
+      id="authSwitch"
+    >
+      Need an account? Sign Up
+    </button>
+
+    <div
+      class="auth-status"
+      id="authStatus"
+    ></div>
+
   </div>
+
 </div>
 
 <!-- SETTINGS -->
 
-<div class="overlay" id="overlay">
+<div
+  class="overlay"
+  id="overlay"
+>
 
   <div class="settings">
 
     <div class="handle"></div>
 
-    <div class="account-section"><div class="account-row"><div class="account-avatar" id="accountAvatar">👤</div><div class="account-info"><strong id="accountName">Not signed in</strong><span id="accountEmail">Sign in to use your account</span></div></div><button class="account-button" id="accountButton">Sign In</button></div><h2>Customize LampAI</h2>
+    <div class="account-section">
+
+      <div class="account-row">
+
+        <div
+          class="account-avatar"
+          id="accountAvatar"
+        >
+          👤
+        </div>
+
+        <div class="account-info">
+
+          <strong id="accountName">
+            Not signed in
+          </strong>
+
+          <span id="accountEmail">
+            Sign in to use your account
+          </span>
+
+        </div>
+
+      </div>
+
+      <button
+        class="account-button"
+        id="accountButton"
+      >
+        Sign In
+      </button>
+
+    </div>
+
+    <h2>
+      Customize LampAI
+    </h2>
 
     <p>
       Tell LampAI how you want it to talk and behave.
@@ -815,9 +1068,19 @@ textarea:focus{
 
     <div class="actions">
 
-      <button class="cancel" id="cancel">Cancel</button>
+      <button
+        class="cancel"
+        id="cancel"
+      >
+        Cancel
+      </button>
 
-      <button class="save" id="save">Save</button>
+      <button
+        class="save"
+        id="save"
+      >
+        Save
+      </button>
 
     </div>
 
@@ -825,639 +1088,1573 @@ textarea:focus{
 
 </div>
 
-
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-const SUPABASE_URL = "https://oovmpejryqkyvcvpwncg.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_PYK6F-mlPtkpBZvwW0_tfg_EJlatxqy";
+
+const SUPABASE_URL =
+  "https://oovmpejryqkyvcvpwncg.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_PYK6F-mlPtkpBZvwW0_tfg_EJlatxqy";
 
 const { createClient } = supabase;
-const supabaseClient = createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
+
+const supabaseClient =
+  createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+const authOverlay =
+  document.getElementById(
+    "authOverlay"
+  );
+
+const authClose =
+  document.getElementById(
+    "authClose"
+  );
+
+const authTitle =
+  document.getElementById(
+    "authTitle"
+  );
+
+const authDescription =
+  document.getElementById(
+    "authDescription"
+  );
+
+const authEmail =
+  document.getElementById(
+    "authEmail"
+  );
+
+const authPassword =
+  document.getElementById(
+    "authPassword"
+  );
+
+const authSubmit =
+  document.getElementById(
+    "authSubmit"
+  );
+
+const authSwitch =
+  document.getElementById(
+    "authSwitch"
+  );
+
+const authStatus =
+  document.getElementById(
+    "authStatus"
+  );
+
+let authMode =
+  "signin";
+
+function openAuth(
+  mode = "signin"
+){
+
+  authMode =
+    mode;
+
+  authTitle.textContent =
+    mode === "signin"
+      ? "Sign in to LampAI"
+      : "Create your LampAI account";
+
+  authDescription.textContent =
+    mode === "signin"
+      ? "Sign in to keep your LampAI account and settings."
+      : "Create an account with your email and password.";
+
+  authSubmit.textContent =
+    mode === "signin"
+      ? "Sign In"
+      : "Sign Up";
+
+  authSwitch.textContent =
+    mode === "signin"
+      ? "Need an account? Sign Up"
+      : "Already have an account? Sign In";
+
+  authStatus.textContent =
+    "";
+
+  authOverlay.classList.add(
+    "open"
+  );
+
+  setTimeout(
+    () => authEmail.focus(),
+    50
+  );
+}
+
+function closeAuth(){
+
+  authOverlay.classList.remove(
+    "open"
+  );
+
+  authStatus.textContent =
+    "";
+}
+
+const accountButton =
+  document.getElementById(
+    "accountButton"
+  );
+
+const accountName =
+  document.getElementById(
+    "accountName"
+  );
+
+const accountEmail =
+  document.getElementById(
+    "accountEmail"
+  );
+
+const accountAvatar =
+  document.getElementById(
+    "accountAvatar"
+  );
+
+async function updateAccountUI(
+  session
+){
+
+  if(session?.user){
+
+    const email =
+      session.user.email ||
+      "Signed in";
+
+    accountName.textContent =
+      session.user.user_metadata?.full_name ||
+      session.user.user_metadata?.name ||
+      email.split("@")[0];
+
+    accountEmail.textContent =
+      email;
+
+    accountButton.textContent =
+      "Sign Out";
+
+    const avatar =
+      session.user.user_metadata?.avatar_url ||
+      session.user.user_metadata?.picture;
+
+    accountAvatar.innerHTML =
+      avatar
+        ? `<img src="${avatar}" alt="">`
+        : "👤";
+
+  }else{
+
+    accountName.textContent =
+      "Not signed in";
+
+    accountEmail.textContent =
+      "Sign in to use your account";
+
+    accountButton.textContent =
+      "Sign In";
+
+    accountAvatar.textContent =
+      "👤";
+  }
+}
+
+accountButton.onclick =
+  async () => {
+
+    const {
+      data:{
+        session
+      }
+    } =
+      await supabaseClient.auth.getSession();
+
+    if(session){
+
+      await supabaseClient.auth.signOut();
+
+      updateAccountUI(
+        null
+      );
+
+    }else{
+
+      openAuth(
+        "signin"
+      );
+    }
+  };
+
+authClose.onclick =
+  closeAuth;
+
+authOverlay.addEventListener(
+  "click",
+  e => {
+
+    if(
+      e.target === authOverlay
+    ){
+      closeAuth();
+    }
+  }
 );
 
-const authOverlay = document.getElementById("authOverlay");
-const authButton = document.getElementById("authButton");
-const authClose = document.getElementById("authClose");
-const authTitle = document.getElementById("authTitle");
-const authDescription = document.getElementById("authDescription");
-const authEmail = document.getElementById("authEmail");
-const authPassword = document.getElementById("authPassword");
-const authSubmit = document.getElementById("authSubmit");
-const authSwitch = document.getElementById("authSwitch");
-const authStatus = document.getElementById("authStatus");
+authSwitch.onclick =
+  () => {
 
-let authMode = "signin";
+    openAuth(
+      authMode === "signin"
+        ? "signup"
+        : "signin"
+    );
+  };
 
-function openAuth(mode = "signin") {
-  authMode = mode;
-  authTitle.textContent = mode === "signin"
-    ? "Sign in to LampAI"
-    : "Create your LampAI account";
-  authDescription.textContent = mode === "signin"
-    ? "Sign in to keep your LampAI account and settings."
-    : "Create an account with your email and password.";
-  authSubmit.textContent = mode === "signin" ? "Sign In" : "Sign Up";
-  authSwitch.textContent = mode === "signin"
-    ? "Need an account? Sign Up"
-    : "Already have an account? Sign In";
-  authStatus.textContent = "";
-  authOverlay.classList.add("open");
-  setTimeout(() => authEmail.focus(), 50);
-}
+document.getElementById(
+  "googleAuth"
+).onclick =
+  async () => {
 
-function closeAuth() {
-  authOverlay.classList.remove("open");
-  authStatus.textContent = "";
-}
+    authStatus.textContent =
+      "Opening Google...";
 
-const accountButton=document.getElementById("accountButton");const accountName=document.getElementById("accountName");const accountEmail=document.getElementById("accountEmail");const accountAvatar=document.getElementById("accountAvatar");async function updateAccountUI(session){if(session?.user){const email=session.user.email||"Signed in";accountName.textContent=session.user.user_metadata?.full_name||session.user.user_metadata?.name||email.split("@")[0];accountEmail.textContent=email;accountButton.textContent="Sign Out";const avatar=session.user.user_metadata?.avatar_url||session.user.user_metadata?.picture;accountAvatar.innerHTML=avatar?`<img src="${avatar}" alt="">`:"👤";}else{accountName.textContent="Not signed in";accountEmail.textContent="Sign in to use your account";accountButton.textContent="Sign In";accountAvatar.textContent="👤";}}accountButton.onclick=async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session){await supabaseClient.auth.signOut();updateAccountUI(null);}else openAuth("signin");};
+    const {
+      error
+    } =
+      await supabaseClient.auth.signInWithOAuth({
 
-authClose.onclick = closeAuth;
+        provider:
+          "google",
 
-authOverlay.addEventListener("click", e => {
-  if (e.target === authOverlay) closeAuth();
-});
-
-authSwitch.onclick = () => {
-  openAuth(authMode === "signin" ? "signup" : "signin");
-};
-
-document.getElementById("googleAuth").onclick = async () => {
-  authStatus.textContent = "Opening Google...";
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: "https://cohencurleee-cloud.github.io/LAMPAI/"
-    }
-  });
-
-  if (error) {
-    authStatus.textContent = error.message || "Google sign-in failed.";
-  }
-};
-
-authSubmit.onclick = async () => {
-  const email = authEmail.value.trim();
-  const password = authPassword.value;
-
-  if (!email || !password) {
-    authStatus.textContent = "Enter your email and password.";
-    return;
-  }
-
-  if (password.length < 6) {
-    authStatus.textContent = "Password must be at least 6 characters.";
-    return;
-  }
-
-  authSubmit.disabled = true;
-  authStatus.textContent = authMode === "signin"
-    ? "Signing in..."
-    : "Creating account...";
-
-  try {
-    let result;
-
-    if (authMode === "signin") {
-      result = await supabaseClient.auth.signInWithPassword({
-        email,
-        password
+        options:{
+          redirectTo:
+            "https://cohencurleee-cloud.github.io/LAMPAI/"
+        }
       });
-    } else {
-      result = await supabaseClient.auth.signUp({
-        email,
-        password
-      });
-    }
 
-    if (result.error) throw result.error;
+    if(error){
 
-    if (authMode === "signup" && !result.data.session) {
       authStatus.textContent =
-        "Account created. Check your email to confirm your account.";
+        error.message ||
+        "Google sign-in failed.";
+    }
+  };
+
+authSubmit.onclick =
+  async () => {
+
+    const email =
+      authEmail.value.trim();
+
+    const password =
+      authPassword.value;
+
+    if(
+      !email ||
+      !password
+    ){
+
+      authStatus.textContent =
+        "Enter your email and password.";
+
       return;
     }
 
-    authStatus.textContent = "You're signed in.";
-    authOverlay.classList.remove("open");
-    authEmail.value = "";
-    authPassword.value = "";
-  } catch (error) {
-    authStatus.textContent = error.message || "Authentication failed.";
-  } finally {
-    authSubmit.disabled = false;
+    if(
+      password.length < 6
+    ){
+
+      authStatus.textContent =
+        "Password must be at least 6 characters.";
+
+      return;
+    }
+
+    authSubmit.disabled =
+      true;
+
+    authStatus.textContent =
+      authMode === "signin"
+        ? "Signing in..."
+        : "Creating account...";
+
+    try{
+
+      let result;
+
+      if(
+        authMode === "signin"
+      ){
+
+        result =
+          await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+          });
+
+      }else{
+
+        result =
+          await supabaseClient.auth.signUp({
+            email,
+            password
+          });
+      }
+
+      if(
+        result.error
+      ){
+        throw result.error;
+      }
+
+      if(
+        authMode === "signup" &&
+        !result.data.session
+      ){
+
+        authStatus.textContent =
+          "Account created. Check your email to confirm your account.";
+
+        return;
+      }
+
+      authStatus.textContent =
+        "You're signed in.";
+
+      authOverlay.classList.remove(
+        "open"
+      );
+
+      authEmail.value =
+        "";
+
+      authPassword.value =
+        "";
+
+    }catch(error){
+
+      authStatus.textContent =
+        error.message ||
+        "Authentication failed.";
+
+    }finally{
+
+      authSubmit.disabled =
+        false;
+    }
+  };
+
+supabaseClient.auth.onAuthStateChange(
+  (event,session) => {
+
+    updateAccountUI(
+      session
+    );
   }
-};
+);
 
-supabaseClient.auth.onAuthStateChange((event, session) => { updateAccountUI(session); });
-
-// Require a signed-in user before using LampAI.
 (async () => {
-  const { data: { session } } = await supabaseClient.auth.getSession();
 
-  updateAccountUI(session);
-  if (!session) openAuth("signin");
+  const {
+    data:{
+      session
+    }
+  } =
+    await supabaseClient.auth.getSession();
+
+  updateAccountUI(
+    session
+  );
+
+  if(
+    !session
+  ){
+    openAuth(
+      "signin"
+    );
+  }
+
 })();
+
 </script>
 
 <script>
 
-// If the HTML is hosted on Vercel with /api/chat, leave this as-is.
-// If the HTML is hosted on GitHub Pages, set this to your FULL Vercel URL,
-// for example: "https://your-project.vercel.app/api/chat".
-const CHAT_API_URL = "/api/chat";
+const CHAT_API_URL =
+  "/api/chat";
 
-const chat = document.getElementById("chat");
-const input = document.getElementById("input");
-const form = document.getElementById("form");
-const send = document.getElementById("send");
-const overlay = document.getElementById("overlay");
-const instructions = document.getElementById("instructions");
-const attach = document.getElementById("attach");
-const attachMenu = document.getElementById("attachMenu");
-const imageInput = document.getElementById("imageInput");
-const fileInput = document.getElementById("fileInput");
-const attachmentsEl = document.getElementById("attachments");
-let selectedAttachments = [];
+const chat =
+  document.getElementById(
+    "chat"
+  );
 
-attach.onclick = e => { e.stopPropagation(); attachMenu.classList.toggle("open"); };
-document.getElementById("imageOption").onclick = () => { attachMenu.classList.remove("open"); imageInput.click(); };
-document.getElementById("fileOption").onclick = () => { attachMenu.classList.remove("open"); fileInput.click(); };
-document.addEventListener("click", e => { if (!attachMenu.contains(e.target) && e.target !== attach) attachMenu.classList.remove("open"); });
-function renderAttachments(){
-  attachmentsEl.innerHTML = "";
+const input =
+  document.getElementById(
+    "input"
+  );
 
-  selectedAttachments.forEach((file,i) => {
-    const preview = document.createElement("div");
-    preview.className = "attachment-preview " + (file.type.startsWith("image/") ? "image-preview" : "file-preview");
+const form =
+  document.getElementById(
+    "form"
+  );
 
-    if(file.type.startsWith("image/")){
-      const img = document.createElement("img");
-      const url = URL.createObjectURL(file);
-      img.src = url;
-      img.alt = file.name;
-      img.onload = () => URL.revokeObjectURL(url);
-      preview.appendChild(img);
-    }else{
-      preview.title = file.name;
-      preview.appendChild(document.createTextNode(file.name));
+const send =
+  document.getElementById(
+    "send"
+  );
+
+const overlay =
+  document.getElementById(
+    "overlay"
+  );
+
+const instructions =
+  document.getElementById(
+    "instructions"
+  );
+
+const attach =
+  document.getElementById(
+    "attach"
+  );
+
+const attachMenu =
+  document.getElementById(
+    "attachMenu"
+  );
+
+const imageInput =
+  document.getElementById(
+    "imageInput"
+  );
+
+const fileInput =
+  document.getElementById(
+    "fileInput"
+  );
+
+const attachmentsEl =
+  document.getElementById(
+    "attachments"
+  );
+
+let selectedAttachments =
+  [];
+
+attach.onclick =
+  e => {
+
+    e.stopPropagation();
+
+    attachMenu.classList.toggle(
+      "open"
+    );
+  };
+
+document.getElementById(
+  "imageOption"
+).onclick =
+  () => {
+
+    attachMenu.classList.remove(
+      "open"
+    );
+
+    imageInput.click();
+  };
+
+document.getElementById(
+  "fileOption"
+).onclick =
+  () => {
+
+    attachMenu.classList.remove(
+      "open"
+    );
+
+    fileInput.click();
+  };
+
+document.addEventListener(
+  "click",
+  e => {
+
+    if(
+      !attachMenu.contains(
+        e.target
+      ) &&
+      e.target !== attach
+    ){
+
+      attachMenu.classList.remove(
+        "open"
+      );
     }
+  }
+);
 
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "remove-attachment";
-    remove.textContent = "×";
-    remove.setAttribute("aria-label", `Remove ${file.name}`);
-    remove.onclick = () => {
-      selectedAttachments.splice(i,1);
-      renderAttachments();
-    };
+function renderAttachments(){
 
-    preview.appendChild(remove);
-    attachmentsEl.appendChild(preview);
-  });
+  attachmentsEl.innerHTML =
+    "";
+
+  selectedAttachments.forEach(
+    (file,i) => {
+
+      const preview =
+        document.createElement(
+          "div"
+        );
+
+      preview.className =
+        "attachment-preview " +
+        (
+          file.type.startsWith(
+            "image/"
+          )
+            ? "image-preview"
+            : "file-preview"
+        );
+
+      if(
+        file.type.startsWith(
+          "image/"
+        )
+      ){
+
+        const img =
+          document.createElement(
+            "img"
+          );
+
+        const url =
+          URL.createObjectURL(
+            file
+          );
+
+        img.src =
+          url;
+
+        img.alt =
+          file.name;
+
+        img.onload =
+          () =>
+            URL.revokeObjectURL(
+              url
+            );
+
+        preview.appendChild(
+          img
+        );
+
+      }else{
+
+        preview.title =
+          file.name;
+
+        preview.appendChild(
+          document.createTextNode(
+            file.name
+          )
+        );
+      }
+
+      const remove =
+        document.createElement(
+          "button"
+        );
+
+      remove.type =
+        "button";
+
+      remove.className =
+        "remove-attachment";
+
+      remove.textContent =
+        "×";
+
+      remove.setAttribute(
+        "aria-label",
+        `Remove ${file.name}`
+      );
+
+      remove.onclick =
+        () => {
+
+          selectedAttachments.splice(
+            i,
+            1
+          );
+
+          renderAttachments();
+        };
+
+      preview.appendChild(
+        remove
+      );
+
+      attachmentsEl.appendChild(
+        preview
+      );
+    }
+  );
 }
 
 function addFiles(files){
-  for(const file of files){
-    if(selectedAttachments.length >= 5) break;
 
-    const duplicate = selectedAttachments.some(
-      x => x.name === file.name && x.size === file.size && x.lastModified === file.lastModified
-    );
+  for(
+    const file of files
+  ){
 
-    if(file.size > 3.2 * 1024 * 1024){
-      alert(`${file.name} is too large. Keep each attachment under about 3 MB for this web build.`);
+    if(
+      selectedAttachments.length >= 5
+    ){
+      break;
+    }
+
+    const duplicate =
+      selectedAttachments.some(
+        x =>
+          x.name === file.name &&
+          x.size === file.size &&
+          x.lastModified === file.lastModified
+      );
+
+    if(
+      file.size >
+      3.2 * 1024 * 1024
+    ){
+
+      alert(
+        `${file.name} is too large. Keep each attachment under about 3 MB for this web build.`
+      );
+
       continue;
     }
 
-    if(!duplicate) selectedAttachments.push(file);
+    if(
+      !duplicate
+    ){
+      selectedAttachments.push(
+        file
+      );
+    }
   }
 
   renderAttachments();
 }
 
-async function normalizeImageFile(file){
-  // Grok vision accepts JPEG/PNG. This also shrinks huge phone photos
-  // so the JSON request doesn't get wrecked by serverless body limits.
+async function normalizeImageFile(
+  file
+){
+
   try{
-    const url = URL.createObjectURL(file);
-    const img = new Image();
 
-    await new Promise((resolve,reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-      img.src = url;
-    });
+    const url =
+      URL.createObjectURL(
+        file
+      );
 
-    const maxSide = 1600;
-    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-    const width = Math.max(1, Math.round(img.naturalWidth * scale));
-    const height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const img =
+      new Image();
 
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
+    await new Promise(
+      (resolve,reject) => {
 
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, width, height);
-    URL.revokeObjectURL(url);
+        img.onload =
+          resolve;
 
-    const blob = await new Promise(resolve =>
-      canvas.toBlob(resolve, "image/jpeg", 0.84)
+        img.onerror =
+          reject;
+
+        img.src =
+          url;
+      }
     );
 
-    if(!blob) return file;
+    const maxSide =
+      1600;
 
-    const cleanName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-    return new File([blob], cleanName, {
-      type: "image/jpeg",
-      lastModified: Date.now()
-    });
+    const scale =
+      Math.min(
+        1,
+        maxSide /
+          Math.max(
+            img.naturalWidth,
+            img.naturalHeight
+          )
+      );
+
+    const width =
+      Math.max(
+        1,
+        Math.round(
+          img.naturalWidth *
+          scale
+        )
+      );
+
+    const height =
+      Math.max(
+        1,
+        Math.round(
+          img.naturalHeight *
+          scale
+        )
+      );
+
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
+
+    canvas.width =
+      width;
+
+    canvas.height =
+      height;
+
+    const ctx =
+      canvas.getContext(
+        "2d"
+      );
+
+    ctx.drawImage(
+      img,
+      0,
+      0,
+      width,
+      height
+    );
+
+    URL.revokeObjectURL(
+      url
+    );
+
+    const blob =
+      await new Promise(
+        resolve =>
+          canvas.toBlob(
+            resolve,
+            "image/jpeg",
+            0.84
+          )
+      );
+
+    if(
+      !blob
+    ){
+      return file;
+    }
+
+    const cleanName =
+      file.name.replace(
+        /\.[^.]+$/,
+        ""
+      ) +
+      ".jpg";
+
+    return new File(
+      [blob],
+      cleanName,
+      {
+        type:
+          "image/jpeg",
+
+        lastModified:
+          Date.now()
+      }
+    );
+
   }catch{
+
     return file;
   }
 }
 
-imageInput.onchange = async e => {
-  const picked = [...e.target.files];
-  imageInput.value = "";
+imageInput.onchange =
+  async e => {
 
-  const normalized = [];
-  for(const file of picked){
-    normalized.push(await normalizeImageFile(file));
-  }
+    const picked =
+      [
+        ...e.target.files
+      ];
 
-  addFiles(normalized);
-};
+    imageInput.value =
+      "";
 
-fileInput.onchange = e => {
-  addFiles([...e.target.files]);
-  fileInput.value = "";
-};
+    const normalized =
+      [];
 
-function fileToDataURL(file){
-  return new Promise((resolve,reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
+    for(
+      const file of picked
+    ){
+
+      normalized.push(
+        await normalizeImageFile(
+          file
+        )
+      );
+    }
+
+    addFiles(
+      normalized
+    );
+  };
+
+fileInput.onchange =
+  e => {
+
+    addFiles(
+      [
+        ...e.target.files
+      ]
+    );
+
+    fileInput.value =
+      "";
+  };
+
+function fileToDataURL(
+  file
+){
+
+  return new Promise(
+    (resolve,reject) => {
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () =>
+          resolve(
+            reader.result
+          );
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(
+        file
+      );
+    }
+  );
 }
 
-function isTextFile(file){
-  return file.type.startsWith("text/") ||
-    /\.(txt|md|csv|json)$/i.test(file.name);
+function isTextFile(
+  file
+){
+
+  return (
+    file.type.startsWith(
+      "text/"
+    ) ||
+    /\.(txt|md|csv|json)$/i.test(
+      file.name
+    )
+  );
 }
 
-async function serializeAttachment(file){
-  const textFile = isTextFile(file);
+async function serializeAttachment(
+  file
+){
+
+  const textFile =
+    isTextFile(
+      file
+    );
 
   return {
-    name: file.name,
-    type: file.type || "application/octet-stream",
-    size: file.size,
-    kind: file.type.startsWith("image/") ? "image" : "file",
-    encoding: textFile ? "text" : "data-url",
-    content: textFile ? await file.text() : await fileToDataURL(file)
+
+    name:
+      file.name,
+
+    type:
+      file.type ||
+      "application/octet-stream",
+
+    size:
+      file.size,
+
+    kind:
+      file.type.startsWith(
+        "image/"
+      )
+        ? "image"
+        : "file",
+
+    encoding:
+      textFile
+        ? "text"
+        : "data-url",
+
+    content:
+      textFile
+        ? await file.text()
+        : await fileToDataURL(
+            file
+          )
   };
 }
 
-
 instructions.value =
-  localStorage.getItem("lampai_instructions") || "";
+  localStorage.getItem(
+    "lampai_instructions"
+  ) || "";
 
+document.getElementById(
+  "settingsButton"
+).onclick =
+  () => {
 
-document.getElementById("settingsButton").onclick = () => {
-  overlay.classList.add("open");
-};
+    overlay.classList.add(
+      "open"
+    );
+  };
 
-document.getElementById("cancel").onclick = () => {
-  overlay.classList.remove("open");
-};
+document.getElementById(
+  "cancel"
+).onclick =
+  () => {
 
-document.getElementById("save").onclick = () => {
+    overlay.classList.remove(
+      "open"
+    );
+  };
 
-  localStorage.setItem(
-    "lampai_instructions",
-    instructions.value.trim()
-  );
+document.getElementById(
+  "save"
+).onclick =
+  () => {
 
-  overlay.classList.remove("open");
-};
+    localStorage.setItem(
+      "lampai_instructions",
+      instructions.value.trim()
+    );
 
+    overlay.classList.remove(
+      "open"
+    );
+  };
 
-overlay.addEventListener("click", e => {
+overlay.addEventListener(
+  "click",
+  e => {
 
-  if(e.target === overlay){
-    overlay.classList.remove("open");
+    if(
+      e.target === overlay
+    ){
+
+      overlay.classList.remove(
+        "open"
+      );
+    }
   }
+);
 
-});
+document.getElementById(
+  "newChat"
+).onclick =
+  () => {
 
+    chat.innerHTML =
+      `
+      <div class="welcome">
 
-document.getElementById("newChat").onclick = () => {
+        <div class="lamp">
+          L
+        </div>
 
-  chat.innerHTML = `
-    <div class="welcome">
+        <h1>
+          What can I help with?
+        </h1>
 
-      <div class="lamp">L</div>
+        <p>
+          Ask me anything.
+        </p>
 
-      <h1>What can I help with?</h1>
+        <div class="suggestions">
 
-      <p>Ask me anything.</p>
+          <button
+            class="suggestion"
+            data-text="Give me some good ideas for a project"
+          >
+            Give me ideas
+          </button>
 
-      <div class="suggestions">
+          <button
+            class="suggestion"
+            data-text="Explain something complicated in simple words"
+          >
+            Explain something
+          </button>
 
-        <button class="suggestion" data-text="Give me some good ideas for a project">
-          Give me ideas
-        </button>
+          <button
+            class="suggestion"
+            data-text="Help me solve a problem"
+          >
+            Help me solve something
+          </button>
 
-        <button class="suggestion" data-text="Explain something complicated in simple words">
-          Explain something
-        </button>
+          <button
+            class="suggestion"
+            data-text="Write something creative for me"
+          >
+            Create something
+          </button>
 
-        <button class="suggestion" data-text="Help me solve a problem">
-          Help me solve something
-        </button>
-
-        <button class="suggestion" data-text="Write something creative for me">
-          Create something
-        </button>
+        </div>
 
       </div>
+      `;
 
-    </div>
-  `;
-
-  activateSuggestions();
-
-};
-
+    activateSuggestions();
+  };
 
 function activateSuggestions(){
 
-  document.querySelectorAll(".suggestion").forEach(button => {
+  document.querySelectorAll(
+    ".suggestion"
+  ).forEach(
+    button => {
 
-    button.onclick = () => {
+      button.onclick =
+        () => {
 
-      input.value = button.dataset.text;
+          input.value =
+            button.dataset.text;
 
-      input.focus();
-
-    };
-
-  });
-
+          input.focus();
+        };
+    }
+  );
 }
-
 
 activateSuggestions();
 
+function addMessage(
+  text,
+  type
+){
 
-function addMessage(text,type){
+  const wrapper =
+    document.createElement(
+      "div"
+    );
 
-  const wrapper = document.createElement("div");
+  wrapper.className =
+    "message " +
+    type;
 
-  wrapper.className = "message " + type;
+  const bubble =
+    document.createElement(
+      "div"
+    );
 
-  const bubble = document.createElement("div");
+  bubble.className =
+    "bubble";
 
-  bubble.className = "bubble";
+  bubble.textContent =
+    text;
 
-  bubble.textContent = text;
+  wrapper.appendChild(
+    bubble
+  );
 
-  wrapper.appendChild(bubble);
+  chat.appendChild(
+    wrapper
+  );
 
-  chat.appendChild(wrapper);
-
-  chat.scrollTop = chat.scrollHeight;
+  chat.scrollTop =
+    chat.scrollHeight;
 
   return wrapper;
-
 }
-
-
 
 function addThinkingMessage(){
-  const wrapper = document.createElement("div");
-  wrapper.className = "message ai";
 
-  const bubble = document.createElement("div");
-  bubble.className = "bubble thinking";
+  const wrapper =
+    document.createElement(
+      "div"
+    );
 
-  for(let i = 0; i < 3; i++){
-    const dot = document.createElement("span");
-    dot.className = "thinking-dot";
-    bubble.appendChild(dot);
+  wrapper.className =
+    "message ai";
+
+  const bubble =
+    document.createElement(
+      "div"
+    );
+
+  bubble.className =
+    "bubble thinking";
+
+  for(
+    let i = 0;
+    i < 3;
+    i++
+  ){
+
+    const dot =
+      document.createElement(
+        "span"
+      );
+
+    dot.className =
+      "thinking-dot";
+
+    bubble.appendChild(
+      dot
+    );
   }
 
-  wrapper.appendChild(bubble);
-  chat.appendChild(wrapper);
-  chat.scrollTop = chat.scrollHeight;
+  wrapper.appendChild(
+    bubble
+  );
+
+  chat.appendChild(
+    wrapper
+  );
+
+  chat.scrollTop =
+    chat.scrollHeight;
 
   return wrapper;
 }
 
-function cleanDisplayText(text = ""){
-  return String(text)
-    .replace(/<think>[\s\S]*?<\/think>/gi, "")
-    .replace(/<think>[\s\S]*/gi, "")
-    .replace(/\*\*/g, "")
-    .replace(/^\s*\*\s+/gm, "")
+function cleanDisplayText(
+  text = ""
+){
+
+  return String(
+    text
+  )
+    .replace(
+      /<think>[\s\S]*?<\/think>/gi,
+      ""
+    )
+    .replace(
+      /<think>[\s\S]*/gi,
+      ""
+    )
+    .replace(
+      /\*\*/g,
+      ""
+    )
+    .replace(
+      /^\s*\*\s+/gm,
+      ""
+    )
     .trim();
 }
 
-function typeAIMessage(text){
-  const cleaned = cleanDisplayText(text);
+function typeAIMessage(
+  text
+){
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "message ai";
+  const cleaned =
+    cleanDisplayText(
+      text
+    );
 
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
+  const wrapper =
+    document.createElement(
+      "div"
+    );
 
-  wrapper.appendChild(bubble);
-  chat.appendChild(wrapper);
+  wrapper.className =
+    "message ai";
 
-  const chunks = cleaned.match(/\S+\s*/g) || [cleaned];
-  let index = 0;
+  const bubble =
+    document.createElement(
+      "div"
+    );
 
-  const timer = setInterval(() => {
-    if(index >= chunks.length){
-      clearInterval(timer);
+  bubble.className =
+    "bubble";
+
+  wrapper.appendChild(
+    bubble
+  );
+
+  chat.appendChild(
+    wrapper
+  );
+
+  const chunks =
+    cleaned.match(
+      /\S+\s*/g
+    ) ||
+    [
+      cleaned
+    ];
+
+  let index =
+    0;
+
+  const timer =
+    setInterval(
+      () => {
+
+        if(
+          index >= chunks.length
+        ){
+
+          clearInterval(
+            timer
+          );
+
+          return;
+        }
+
+        const amount =
+          Math.min(
+            3,
+            chunks.length -
+            index
+          );
+
+        for(
+          let i = 0;
+          i < amount;
+          i++
+        ){
+
+          bubble.textContent +=
+            chunks[
+              index++
+            ];
+        }
+
+        chat.scrollTop =
+          chat.scrollHeight;
+
+      },
+      32
+    );
+
+  return wrapper;
+}
+
+function addUserMessage(
+  text,
+  files
+){
+
+  const wrapper =
+    document.createElement(
+      "div"
+    );
+
+  wrapper.className =
+    "message user";
+
+  const bubble =
+    document.createElement(
+      "div"
+    );
+
+  bubble.className =
+    "bubble";
+
+  if(
+    files.length
+  ){
+
+    const sent =
+      document.createElement(
+        "div"
+      );
+
+    sent.className =
+      "sent-attachments";
+
+    files.forEach(
+      file => {
+
+        if(
+          file.type.startsWith(
+            "image/"
+          )
+        ){
+
+          const img =
+            document.createElement(
+              "img"
+            );
+
+          const url =
+            URL.createObjectURL(
+              file
+            );
+
+          img.className =
+            "sent-image";
+
+          img.src =
+            url;
+
+          img.alt =
+            file.name;
+
+          img.onload =
+            () =>
+              URL.revokeObjectURL(
+                url
+              );
+
+          sent.appendChild(
+            img
+          );
+
+        }else{
+
+          const fileEl =
+            document.createElement(
+              "div"
+            );
+
+          fileEl.className =
+            "sent-file";
+
+          fileEl.textContent =
+            file.name;
+
+          fileEl.title =
+            file.name;
+
+          sent.appendChild(
+            fileEl
+          );
+        }
+      }
+    );
+
+    bubble.appendChild(
+      sent
+    );
+  }
+
+  if(
+    text
+  ){
+
+    const textEl =
+      document.createElement(
+        "div"
+      );
+
+    textEl.className =
+      "user-text";
+
+    textEl.textContent =
+      text;
+
+    bubble.appendChild(
+      textEl
+    );
+  }
+
+  wrapper.appendChild(
+    bubble
+  );
+
+  chat.appendChild(
+    wrapper
+  );
+
+  chat.scrollTop =
+    chat.scrollHeight;
+
+  return wrapper;
+}
+
+form.addEventListener(
+  "submit",
+  async e => {
+
+    e.preventDefault();
+
+    const text =
+      input.value.trim();
+
+    const outgoingAttachments =
+      [
+        ...selectedAttachments
+      ];
+
+    if(
+      !text &&
+      outgoingAttachments.length === 0
+    ){
       return;
     }
 
-    // A few words at a time feels fast without dumping the whole answer instantly.
-    const amount = Math.min(3, chunks.length - index);
-
-    for(let i = 0; i < amount; i++){
-      bubble.textContent += chunks[index++];
-    }
-
-    chat.scrollTop = chat.scrollHeight;
-  }, 32);
-
-  return wrapper;
-}
-
-
-function addUserMessage(text, files){
-  const wrapper = document.createElement("div");
-  wrapper.className = "message user";
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-
-  if(files.length){
-    const sent = document.createElement("div");
-    sent.className = "sent-attachments";
-
-    files.forEach(file => {
-      if(file.type.startsWith("image/")){
-        const img = document.createElement("img");
-        const url = URL.createObjectURL(file);
-        img.className = "sent-image";
-        img.src = url;
-        img.alt = file.name;
-        img.onload = () => URL.revokeObjectURL(url);
-        sent.appendChild(img);
-      }else{
-        const fileEl = document.createElement("div");
-        fileEl.className = "sent-file";
-        fileEl.textContent = file.name;
-        fileEl.title = file.name;
-        sent.appendChild(fileEl);
-      }
-    });
-
-    bubble.appendChild(sent);
-  }
-
-  if(text){
-    const textEl = document.createElement("div");
-    textEl.className = "user-text";
-    textEl.textContent = text;
-    bubble.appendChild(textEl);
-  }
-
-  wrapper.appendChild(bubble);
-  chat.appendChild(wrapper);
-  chat.scrollTop = chat.scrollHeight;
-
-  return wrapper;
-}
-
-
-form.addEventListener("submit", async e => {
-
-  e.preventDefault();
-
-  const text = input.value.trim();
-  const outgoingAttachments = [...selectedAttachments];
-
-  if(!text && outgoingAttachments.length === 0) return;
-
-
-  const welcome = document.querySelector(".welcome");
-
-  if(welcome) welcome.remove();
-
-
-  addUserMessage(text, outgoingAttachments);
-
-  input.value = "";
-
-  input.disabled = true;
-
-  send.disabled = true;
-
-
-  const thinking = addThinkingMessage();
-
-
-  try{
-
-    if(location.hostname.endsWith("github.io") && CHAT_API_URL.startsWith("/")){
-      throw new Error(
-        "LampAI is on GitHub Pages, but CHAT_API_URL still points to /api/chat. " +
-        "Set CHAT_API_URL to the full Vercel API URL."
+    const welcome =
+      document.querySelector(
+        ".welcome"
       );
+
+    if(
+      welcome
+    ){
+      welcome.remove();
     }
 
-    const response = await fetch(CHAT_API_URL,{
+    addUserMessage(
+      text,
+      outgoingAttachments
+    );
 
-      method:"POST",
+    input.value =
+      "";
 
-      headers:{
-        "Content-Type":"application/json"
-      },
+    input.disabled =
+      true;
 
-      body:JSON.stringify({
-        message:text,
-        instructions: localStorage.getItem("lampai_instructions") || "",
-        attachments: await Promise.all(outgoingAttachments.map(serializeAttachment))
-      })
+    send.disabled =
+      true;
 
-    });
-
-
-    const raw = await response.text();
-    let data = {};
+    const thinking =
+      addThinkingMessage();
 
     try{
-      data = raw ? JSON.parse(raw) : {};
-    }catch{
-      data = { error: raw || "The server returned an invalid response." };
-    }
 
-    thinking.remove();
+      if(
+        location.hostname.endsWith(
+          "github.io"
+        ) &&
+        CHAT_API_URL.startsWith(
+          "/"
+        )
+      ){
 
+        throw new Error(
+          "LampAI is on GitHub Pages, but CHAT_API_URL still points to /api/chat. Set CHAT_API_URL to the full Vercel API URL."
+        );
+      }
 
-    if(!response.ok){
+      const response =
+        await fetch(
+          CHAT_API_URL,
+          {
+
+            method:
+              "POST",
+
+            headers:{
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+
+                message:
+                  text,
+
+                instructions:
+                  localStorage.getItem(
+                    "lampai_instructions"
+                  ) || "",
+
+                attachments:
+                  await Promise.all(
+                    outgoingAttachments.map(
+                      serializeAttachment
+                    )
+                  )
+              })
+          }
+        );
+
+      const raw =
+        await response.text();
+
+      let data =
+        {};
+
+      try{
+
+        data =
+          raw
+            ? JSON.parse(
+                raw
+              )
+            : {};
+
+      }catch{
+
+        data = {
+          error:
+            raw ||
+            "The server returned an invalid response."
+        };
+      }
+
+      thinking.remove();
+
+      if(
+        !response.ok
+      ){
+
+        addMessage(
+          cleanDisplayText(
+            data.error ||
+            "Something went wrong."
+          ),
+          "ai"
+        );
+
+        return;
+      }
+
+      typeAIMessage(
+        data.reply ||
+        "I didn't get a response."
+      );
+
+      selectedAttachments =
+        [];
+
+      renderAttachments();
+
+    }catch(error){
+
+      thinking.remove();
 
       addMessage(
-        cleanDisplayText(data.error || "Something went wrong."),
+        cleanDisplayText(
+          error?.message ||
+          "I couldn't connect right now."
+        ),
         "ai"
       );
 
-      return;
+    }finally{
 
+      input.disabled =
+        false;
+
+      send.disabled =
+        false;
+
+      input.focus();
     }
-
-
-    typeAIMessage(
-      data.reply || "I didn't get a response."
-    );
-
-    selectedAttachments = [];
-    renderAttachments();
-
-
-  }catch(error){
-
-    thinking.remove();
-
-    addMessage(
-      cleanDisplayText(error?.message || "I couldn't connect right now."),
-      "ai"
-    );
-
-  }finally{
-
-    input.disabled = false;
-
-    send.disabled = false;
-
-    input.focus();
-
   }
-
-});
+);
 
 </script>
 
