@@ -1,4 +1,4 @@
-const CACHE_NAME='lampai-shell-v1';
+const CACHE_NAME='lampai-shell-v2';
 const APP_SHELL=['/','/app.html','/index.html','/manifest.webmanifest','/icon-180.png','/icon-192.png','/icon-512.png'];
 
 self.addEventListener('install',event=>{
@@ -21,7 +21,6 @@ self.addEventListener('fetch',event=>{
   const url=new URL(request.url);
 
   if(request.method!=='GET' || url.origin!==self.location.origin) return;
-
   if(url.pathname.startsWith('/api/')) return;
 
   if(request.mode==='navigate'){
