@@ -4,25 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07080a">
+<meta name="color-scheme" content="dark">
 <title>LampAI</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<meta name="application-name" content="LampAI">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LampAI">
+<meta name="mobile-web-app-capable" content="yes">
 
 <style>
 *{box-sizing:border-box}
-
+:root{
+  --bg:#07080a;
+  --panel:#111317;
+  --panel2:#17191d;
+  --line:rgba(255,255,255,.09);
+  --text:#f5f5f5;
+  --muted:#777d86;
+  --soft:#a5abb4;
+}
 html,body{
   margin:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#07080a;
-  color:#f5f5f5;
+  background:var(--bg);
+  color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+  -webkit-tap-highlight-color:transparent;
 }
-
 button,input,textarea{font:inherit}
-
-button{cursor:pointer}
-
+button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .app{
   width:100%;
   height:100dvh;
@@ -30,9 +45,8 @@ button{cursor:pointer}
   flex-direction:column;
   background:
     radial-gradient(circle at 50% -20%,rgba(255,255,255,.09),transparent 35%),
-    #07080a;
+    var(--bg);
 }
-
 header{
   height:62px;
   flex-shrink:0;
@@ -40,17 +54,20 @@ header{
   align-items:center;
   justify-content:center;
   position:relative;
+  z-index:20;
   border-bottom:1px solid rgba(255,255,255,.07);
   backdrop-filter:blur(20px);
-  background:rgba(7,8,10,.75);
+  -webkit-backdrop-filter:blur(20px);
+  background:rgba(7,8,10,.78);
+  padding-top:env(safe-area-inset-top);
 }
-
 .logo{
   font-size:18px;
-  font-weight:700;
+  font-weight:750;
   letter-spacing:-.4px;
+  display:flex;
+  align-items:center;
 }
-
 .logo-dot{
   display:inline-block;
   width:8px;
@@ -60,11 +77,12 @@ header{
   background:#fff;
   box-shadow:0 0 14px rgba(255,255,255,.8);
 }
-
+.header-group{position:absolute;display:flex;gap:7px}
+.header-left{left:12px}
+.header-right{right:12px}
 .header-button{
-  position:absolute;
-  width:42px;
-  height:42px;
+  width:40px;
+  height:40px;
   border:0;
   border-radius:50%;
   background:rgba(255,255,255,.07);
@@ -73,31 +91,16 @@ header{
   place-items:center;
   font-size:18px;
 }
-
-.header-button:active{
-  transform:scale(.92);
-}
-
-#newChat{
-  left:14px;
-}
-
-#settingsButton{
-  right:14px;
-}
-
+.header-button:active{transform:scale(.92)}
+.header-button svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9}
 #chat{
   flex:1;
   overflow-y:auto;
   overscroll-behavior:contain;
-  padding:24px 16px 150px;
+  padding:24px 16px 162px;
   scroll-behavior:smooth;
 }
-
-#chat::-webkit-scrollbar{
-  display:none;
-}
-
+#chat::-webkit-scrollbar,.drawer::-webkit-scrollbar,.settings::-webkit-scrollbar{display:none}
 .welcome{
   min-height:70%;
   display:flex;
@@ -107,34 +110,21 @@ header{
   text-align:center;
   padding:20px;
 }
-
 .lamp{
   width:74px;
   height:74px;
   border-radius:24px;
   display:grid;
   place-items:center;
-  font-size:36px;
+  font-size:34px;
+  font-weight:800;
   margin-bottom:22px;
-  background:linear-gradient(145deg,#ffffff,#9da3aa);
+  background:linear-gradient(145deg,#fff,#9da3aa);
   color:#08090a;
-  box-shadow:
-    0 0 35px rgba(255,255,255,.13),
-    inset 0 1px 1px rgba(255,255,255,.8);
+  box-shadow:0 0 35px rgba(255,255,255,.13),inset 0 1px 1px rgba(255,255,255,.8);
 }
-
-.welcome h1{
-  margin:0;
-  font-size:31px;
-  letter-spacing:-1.3px;
-}
-
-.welcome p{
-  margin:9px 0 0;
-  color:#777d86;
-  font-size:15px;
-}
-
+.welcome h1{margin:0;font-size:31px;letter-spacing:-1.3px}
+.welcome p{margin:9px 0 0;color:var(--muted);font-size:15px}
 .suggestions{
   width:100%;
   max-width:520px;
@@ -143,7 +133,6 @@ header{
   gap:9px;
   margin-top:30px;
 }
-
 .suggestion{
   text-align:left;
   border:1px solid rgba(255,255,255,.08);
@@ -151,434 +140,117 @@ header{
   color:#ddd;
   border-radius:16px;
   padding:14px;
-  transition:.18s;
 }
-
-.suggestion:active{
-  transform:scale(.97);
-  background:rgba(255,255,255,.09);
-}
-
+.suggestion:active{transform:scale(.97);background:rgba(255,255,255,.09)}
 .message{
   width:min(820px,100%);
   margin:0 auto 18px;
   display:flex;
-  animation:appear .22s ease;
+  flex-direction:column;
+  animation:appear .2s ease;
 }
-
-@keyframes appear{
-  from{opacity:0;transform:translateY(7px)}
-  to{opacity:1;transform:none}
-}
-
-.message.user{
-  justify-content:flex-end;
-}
-
+@keyframes appear{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.message.user{align-items:flex-end}
+.message.ai{align-items:flex-start}
 .bubble{
   max-width:86%;
   padding:12px 15px;
   border-radius:20px;
-  line-height:1.5;
+  line-height:1.52;
   font-size:15px;
   white-space:pre-wrap;
+  overflow-wrap:anywhere;
 }
-
 .user .bubble{
   background:#f1f1f1;
   color:#090909;
   border-bottom-right-radius:6px;
 }
-
 .ai .bubble{
   color:#e8e8e8;
   background:rgba(255,255,255,.045);
   border:1px solid rgba(255,255,255,.07);
   border-bottom-left-radius:6px;
 }
-
+.message-actions{
+  display:flex;
+  gap:4px;
+  margin-top:6px;
+  padding:0 5px;
+}
+.message-action{
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#747a83;
+  font-size:12px;
+  padding:6px 7px;
+}
+.message-action:active{background:rgba(255,255,255,.06);color:#ddd}
 .thinking{
-  color:#777d86!important;
+  color:var(--muted)!important;
   display:flex;
   align-items:center;
   gap:5px;
   min-width:58px;
 }
-
 .thinking-dot{
   width:6px;
   height:6px;
   border-radius:50%;
-  background:#777d86;
+  background:var(--muted);
   opacity:.28;
   animation:thinkingPulse 1s infinite ease-in-out;
 }
-
 .thinking-dot:nth-child(2){animation-delay:.15s}
-.thinking-dot:nth-child(3){animation-delay:.30s}
-
-@keyframes thinkingPulse{
-  0%,80%,100%{opacity:.25;transform:translateY(0)}
-  40%{opacity:1;transform:translateY(-3px)}
-}
-
+.thinking-dot:nth-child(3){animation-delay:.3s}
+@keyframes thinkingPulse{0%,80%,100%{opacity:.25;transform:none}40%{opacity:1;transform:translateY(-3px)}}
 .bottom{
   position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  z-index:10;
+  left:0;right:0;bottom:0;
+  z-index:15;
   padding:8px 12px calc(8px + env(safe-area-inset-bottom));
-  background:linear-gradient(transparent,#07080a 28%);
+  background:linear-gradient(transparent,var(--bg) 26%);
 }
-
 .composer{
   width:min(820px,100%);
   margin:auto;
-  min-height:64px;
+  min-height:62px;
   display:flex;
-  align-items:center;
-  gap:8px;
-  padding:9px 10px 9px 12px;
+  align-items:flex-end;
+  gap:7px;
+  padding:9px 9px 9px 10px;
   border:1px solid rgba(255,255,255,.1);
   border-radius:25px;
-  background:rgba(20,21,24,.94);
+  background:rgba(20,21,24,.96);
   backdrop-filter:blur(25px);
+  -webkit-backdrop-filter:blur(25px);
   box-shadow:0 12px 40px rgba(0,0,0,.4);
 }
-
 #input{
   min-width:0;
   flex:1;
+  max-height:132px;
+  min-height:42px;
+  resize:none;
+  overflow-y:auto;
   border:0;
   outline:0;
   background:transparent;
   color:white;
   font-size:17px;
+  line-height:1.35;
+  padding:10px 2px 8px;
 }
-
-#input::placeholder{
-  color:#656a72;
+#input::placeholder{color:#656a72}
+.icon,.send{
+  width:42px;height:42px;flex-shrink:0;border:0;border-radius:50%;display:grid;place-items:center
 }
-
-.icon{
-  width:38px;
-  height:38px;
-  flex-shrink:0;
-  border:0;
-  border-radius:50%;
-  background:transparent;
-  color:#9298a1;
-  font-size:20px;
-}
-
-.send{
-  width:44px;
-  height:44px;
-  flex-shrink:0;
-  border:0;
-  border-radius:50%;
-  background:#fff;
-  color:#000;
-  font-size:17px;
-  font-weight:800;
-}
-
-.send:disabled{
-  opacity:.35;
-}
-
-.disclaimer{
-  text-align:center;
-  color:#4d5259;
-  font-size:10px;
-  margin-top:6px;
-}
-
-/* SETTINGS */
-
-.overlay{
-  position:fixed;
-  inset:0;
-  z-index:50;
-  display:none;
-  align-items:flex-end;
-  justify-content:center;
-  background:rgba(0,0,0,.65);
-  backdrop-filter:blur(7px);
-}
-
-.overlay.open{
-  display:flex;
-}
-
-.settings{
-  width:100%;
-  max-width:600px;
-  max-height:88dvh;
-  overflow:auto;
-  background:#111317;
-  border:1px solid rgba(255,255,255,.09);
-  border-bottom:0;
-  border-radius:28px 28px 0 0;
-  padding:18px 18px calc(24px + env(safe-area-inset-bottom));
-  animation:sheet .25s ease;
-}
-
-@keyframes sheet{
-  from{transform:translateY(100%)}
-  to{transform:none}
-}
-
-.handle{
-  width:38px;
-  height:4px;
-  border-radius:10px;
-  background:#41454b;
-  margin:0 auto 20px;
-}
-
-.settings h2{
-  margin:0;
-  font-size:22px;
-}
-
-.settings p{
-  color:#777d86;
-  font-size:14px;
-  line-height:1.45;
-}
-
-textarea{
-  width:100%;
-  min-height:145px;
-  resize:none;
-  padding:14px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.09);
-  outline:0;
-  background:#090a0c;
-  color:#fff;
-  font-size:15px;
-  line-height:1.45;
-}
-
-textarea:focus{
-  border-color:rgba(255,255,255,.25);
-}
-
-.actions{
-  display:flex;
-  gap:8px;
-  margin-top:12px;
-}
-
-.actions button{
-  flex:1;
-  height:48px;
-  border-radius:14px;
-  border:0;
-}
-
-.cancel{
-  background:#22252a;
-  color:#ddd;
-}
-
-.save{
-  background:#fff;
-  color:#000;
-  font-weight:700;
-}
-
-/* AUTH */
-
-.auth-overlay{
-  position:fixed;
-  inset:0;
-  z-index:100;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  background:rgba(0,0,0,.78);
-  backdrop-filter:blur(12px);
-}
-
-.auth-overlay.open{
-  display:flex;
-}
-
-.auth-card{
-  width:min(420px,100%);
-  background:#111317;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:24px;
-  padding:24px;
-  box-shadow:0 20px 70px rgba(0,0,0,.55);
-}
-
-.auth-card h2{
-  margin:0 0 7px;
-  font-size:25px;
-}
-
-.auth-card p{
-  margin:0 0 20px;
-  color:#777d86;
-  font-size:14px;
-  line-height:1.45;
-}
-
-.auth-field{
-  width:100%;
-  height:50px;
-  margin-top:10px;
-  padding:0 14px;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:14px;
-  outline:0;
-  background:#090a0c;
-  color:#fff;
-}
-
-.auth-field:focus{
-  border-color:rgba(255,255,255,.3)
-}
-
-.auth-submit{
-  width:100%;
-  height:50px;
-  margin-top:14px;
-  border:0;
-  border-radius:14px;
-  background:#fff;
-  color:#000;
-  font-weight:700;
-}
-
-.auth-google{
-  width:100%;
-  height:50px;
-  margin-top:10px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;
-  background:#1b1d21;
-  color:#fff;
-  font-weight:600;
-}
-
-.auth-divider{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin:14px 0 2px;
-  color:#666b73;
-  font-size:12px;
-}
-
-.auth-divider::before,
-.auth-divider::after{
-  content:"";
-  height:1px;
-  flex:1;
-  background:rgba(255,255,255,.08);
-}
-
-.auth-switch{
-  width:100%;
-  margin-top:13px;
-  border:0;
-  background:transparent;
-  color:#aaa;
-  font-size:13px;
-}
-
-.auth-close{
-  float:right;
-  width:32px;
-  height:32px;
-  border:0;
-  border-radius:50%;
-  background:rgba(255,255,255,.07);
-  color:#ddd;
-}
-
-.auth-status{
-  min-height:20px;
-  margin-top:10px;
-  color:#aaa;
-  font-size:13px;
-  text-align:center;
-}
-
-.account-section{
-  margin:0 0 24px;
-  padding:14px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:18px;
-  background:rgba(255,255,255,.035);
-}
-
-.account-row{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.account-avatar{
-  width:44px;
-  height:44px;
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  background:#24272c;
-  overflow:hidden;
-}
-
-.account-avatar img{
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  object-fit:cover;
-}
-
-.account-info{
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-}
-
-.account-info strong,
-.account-info span{
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.account-info strong{
-  font-size:14px;
-}
-
-.account-info span{
-  font-size:12px;
-  color:#777d86;
-}
-
-.account-button{
-  width:100%;
-  height:44px;
-  margin-top:12px;
-  border:0;
-  border-radius:13px;
-  background:#fff;
-  color:#000;
-  font-weight:700;
-}
-
-/* ATTACHMENTS */
-
+.icon{background:transparent;color:#9298a1;font-size:20px}
+.send{background:#fff;color:#000;font-size:17px;font-weight:800}
+.send.stop{background:#e8e8e8}
+.send:disabled{opacity:.35}
+.disclaimer{text-align:center;color:#4d5259;font-size:10px;margin-top:6px}
 .attachments{
   width:min(820px,100%);
   margin:0 auto 8px;
@@ -586,2077 +258,968 @@ textarea:focus{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
-  align-items:flex-end;
 }
-
-.attachment-preview{
-  position:relative;
-  flex:0 0 auto;
-}
-
+.attachment-preview{position:relative;flex:0 0 auto}
 .image-preview{
-  width:76px;
-  height:76px;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:15px;
-  background:#15171a;
+  width:72px;height:72px;overflow:hidden;border:1px solid var(--line);border-radius:15px;background:#15171a
 }
-
-.image-preview img{
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:cover;
-}
-
+.image-preview img{width:100%;height:100%;display:block;object-fit:cover}
 .file-preview{
-  max-width:220px;
-  height:42px;
-  display:flex;
-  align-items:center;
-  padding:0 34px 0 12px;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:12px;
-  background:#17191d;
-  color:#ddd;
-  font-size:12px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  max-width:220px;height:42px;display:flex;align-items:center;padding:0 34px 0 12px;
+  border:1px solid var(--line);border-radius:12px;background:#17191d;color:#ddd;font-size:12px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
 }
-
 .remove-attachment{
-  position:absolute;
-  top:-6px;
-  right:-6px;
-  width:22px;
-  height:22px;
-  display:grid;
-  place-items:center;
-  padding:0;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:50%;
-  background:#2a2d32;
-  color:#fff;
-  font-size:14px;
-  line-height:1;
+  position:absolute;top:-6px;right:-6px;width:22px;height:22px;display:grid;place-items:center;
+  padding:0;border:1px solid rgba(255,255,255,.12);border-radius:50%;background:#2a2d32;color:#fff;font-size:14px
 }
-
 #attachMenu{
   position:absolute;
   left:max(12px,calc(50% - 410px));
   bottom:82px;
   z-index:25;
   display:none;
-  width:126px;
+  width:136px;
   padding:5px;
   border:1px solid rgba(255,255,255,.1);
   border-radius:12px;
   background:#17191d;
   box-shadow:0 12px 36px rgba(0,0,0,.5);
 }
-
-#attachMenu.open{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
+#attachMenu.open{display:flex;flex-direction:column;gap:2px}
 .attach-option{
-  width:100%;
-  height:35px;
-  padding:0 9px;
-  border:0;
-  border-radius:8px;
-  background:transparent;
-  color:#e5e5e5;
-  font-size:13px;
-  text-align:left;
+  width:100%;height:37px;padding:0 9px;border:0;border-radius:8px;background:transparent;color:#e5e5e5;font-size:13px;text-align:left
 }
-
-.attach-option:active{
-  background:rgba(255,255,255,.08);
-}
-
-.sent-attachments{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-  margin-bottom:8px;
-}
-
-.sent-image{
-  width:min(220px,58vw);
-  max-height:220px;
-  display:block;
-  object-fit:cover;
-  border-radius:13px;
-}
-
+.attach-option:active{background:rgba(255,255,255,.08)}
+.sent-attachments{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.sent-image{width:min(220px,58vw);max-height:220px;display:block;object-fit:cover;border-radius:13px}
 .sent-file{
-  max-width:240px;
-  padding:8px 10px;
-  border-radius:10px;
-  background:rgba(0,0,0,.12);
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  max-width:240px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.12);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px
+}
+.user-text{white-space:pre-wrap}
+.status-bar{
+  position:fixed;
+  top:calc(68px + env(safe-area-inset-top));
+  left:50%;
+  transform:translateX(-50%) translateY(-14px);
+  z-index:45;
+  display:none;
+  align-items:center;
+  gap:10px;
+  max-width:calc(100% - 24px);
+  padding:9px 11px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:13px;
+  background:#17191d;
+  box-shadow:0 12px 32px rgba(0,0,0,.42);
+  color:#ddd;
   font-size:12px;
+  opacity:0;
+  transition:.2s;
 }
-
-.user-text{
-  white-space:pre-wrap;
+.status-bar.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
+.status-bar button{border:0;border-radius:8px;background:#fff;color:#000;font-size:11px;font-weight:700;padding:6px 8px}
+.backdrop{
+  position:fixed;inset:0;z-index:49;display:none;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)
 }
+.backdrop.open{display:block}
+.drawer{
+  position:fixed;
+  top:0;bottom:0;left:0;
+  z-index:60;
+  width:min(360px,88vw);
+  transform:translateX(-102%);
+  transition:transform .23s ease;
+  background:#0e1013;
+  border-right:1px solid var(--line);
+  padding:calc(14px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));
+  overflow-y:auto;
+}
+.drawer.open{transform:none}
+.drawer-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.drawer h2{margin:0;font-size:20px}
+.drawer-close{width:36px;height:36px;border:0;border-radius:50%;background:#1a1d21;color:#ddd;font-size:20px}
+.history-search{
+  width:100%;height:43px;border:1px solid var(--line);border-radius:13px;background:#15171a;color:white;outline:0;padding:0 12px;margin-bottom:10px
+}
+.history-new{
+  width:100%;height:44px;border:0;border-radius:13px;background:#fff;color:#000;font-weight:750;margin-bottom:12px
+}
+.history-list{display:flex;flex-direction:column;gap:5px}
+.history-empty{color:#626872;font-size:13px;padding:15px 8px}
+.history-item{
+  position:relative;
+  width:100%;
+  border:0;
+  border-radius:13px;
+  background:transparent;
+  color:#dfe1e4;
+  text-align:left;
+  padding:11px 40px 11px 11px;
+}
+.history-item.active{background:rgba(255,255,255,.075)}
+.history-item:active{background:rgba(255,255,255,.095)}
+.history-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.history-time{display:block;color:#60666f;font-size:11px;margin-top:3px}
+.history-delete{
+  position:absolute;right:7px;top:50%;transform:translateY(-50%);
+  width:29px;height:29px;border:0;border-radius:8px;background:transparent;color:#666c75;font-size:17px
+}
+.history-delete:active{background:rgba(255,255,255,.08);color:#ddd}
+.overlay{
+  position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)
+}
+.overlay.open{display:flex}
+.settings{
+  width:100%;
+  max-width:600px;
+  max-height:88dvh;
+  overflow:auto;
+  background:#111317;
+  border:1px solid var(--line);
+  border-bottom:0;
+  border-radius:28px 28px 0 0;
+  padding:18px 18px calc(24px + env(safe-area-inset-bottom));
+  animation:sheet .24s ease;
+}
+@keyframes sheet{from{transform:translateY(100%)}to{transform:none}}
+.handle{width:38px;height:4px;border-radius:10px;background:#41454b;margin:0 auto 20px}
+.settings h2{margin:0;font-size:22px}
+.settings p{color:var(--muted);font-size:14px;line-height:1.45}
+.settings textarea{
+  width:100%;min-height:145px;resize:none;padding:14px;border-radius:16px;border:1px solid var(--line);
+  outline:0;background:#090a0c;color:#fff;font-size:15px;line-height:1.45
+}
+.settings textarea:focus{border-color:rgba(255,255,255,.25)}
+.actions{display:flex;gap:8px;margin-top:12px}
+.actions button{flex:1;height:48px;border-radius:14px;border:0}
+.cancel{background:#22252a;color:#ddd}.save{background:#fff;color:#000;font-weight:700}
+.setting-row{
+  margin-top:14px;padding:13px;border:1px solid rgba(255,255,255,.07);border-radius:15px;background:rgba(255,255,255,.025)
+}
+.setting-row-title{font-size:14px;font-weight:650}
+.setting-row-sub{font-size:12px;color:#686e77;margin-top:3px}
+.danger-button{
+  width:100%;height:44px;margin-top:10px;border:1px solid rgba(255,100,100,.16);
+  border-radius:12px;background:rgba(255,80,80,.06);color:#e6a1a1
+}
+.account-section{margin:0 0 24px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(255,255,255,.035)}
+.account-row{display:flex;align-items:center;gap:12px}
+.account-avatar{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#24272c;overflow:hidden}
+.account-avatar img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.account-info{min-width:0;display:flex;flex-direction:column;gap:3px}
+.account-info strong,.account-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-info strong{font-size:14px}.account-info span{font-size:12px;color:var(--muted)}
+.account-button{width:100%;height:44px;margin-top:12px;border:0;border-radius:13px;background:#fff;color:#000;font-weight:700}
+.auth-overlay{
+  position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;
+  background:rgba(0,0,0,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+}
+.auth-overlay.open{display:flex}
+.auth-card{width:min(420px,100%);background:#111317;border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:24px;box-shadow:0 20px 70px rgba(0,0,0,.55)}
+.auth-card h2{margin:0 0 7px;font-size:25px}
+.auth-card p{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.45}
+.auth-field{width:100%;height:50px;margin-top:10px;padding:0 14px;border:1px solid var(--line);border-radius:14px;outline:0;background:#090a0c;color:#fff}
+.auth-field:focus{border-color:rgba(255,255,255,.3)}
+.auth-submit,.auth-google{width:100%;height:50px;margin-top:12px;border-radius:14px;font-weight:650}
+.auth-submit{border:0;background:#fff;color:#000}
+.auth-google{border:1px solid rgba(255,255,255,.1);background:#1b1d21;color:#fff}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0 2px;color:#666b73;font-size:12px}
+.auth-divider::before,.auth-divider::after{content:"";height:1px;flex:1;background:rgba(255,255,255,.08)}
+.auth-switch{width:100%;margin-top:13px;border:0;background:transparent;color:#aaa;font-size:13px}
+.auth-close{float:right;width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.07);color:#ddd}
+.auth-status{min-height:20px;margin-top:10px;color:#aaa;font-size:13px;text-align:center}
 
 @media(max-width:600px){
-
-  header{
-    height:58px;
-  }
-
-  .welcome{
-    min-height:65%;
-  }
-
-  .lamp{
-    width:66px;
-    height:66px;
-    border-radius:21px;
-    font-size:31px;
-  }
-
-  .welcome h1{
-    font-size:28px;
-  }
-
-  .suggestions{
-    grid-template-columns:1fr;
-    max-width:390px;
-  }
-
-  .suggestion{
-    padding:13px;
-  }
-
-  .bubble{
-    max-width:90%;
-  }
-
-  #chat{
-    padding-left:12px;
-    padding-right:12px;
-  }
-
-  .image-preview{
-    width:68px;
-    height:68px;
-  }
-
-  #attachMenu{
-    left:12px;
-  }
-
-  .composer{
-    min-height:62px;
-  }
-
+  header{height:58px}
+  .welcome{min-height:65%}
+  .lamp{width:66px;height:66px;border-radius:21px;font-size:30px}
+  .welcome h1{font-size:28px}
+  .suggestions{grid-template-columns:1fr;max-width:390px}
+  .suggestion{padding:13px}
+  .bubble{max-width:91%}
+  #chat{padding-left:12px;padding-right:12px}
+  #attachMenu{left:12px}
+  .composer{min-height:60px}
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
-
-<header>
-
-  <button
-    class="header-button"
-    id="newChat"
-  >
-    +
-  </button>
-
-  <div class="logo">
-    <span class="logo-dot"></span>
-    LampAI
-  </div>
-
-  <button
-    class="header-button"
-    id="settingsButton"
-  >
-    ⚙
-  </button>
-
-</header>
-
-<div id="chat">
-
-  <div class="welcome">
-
-    <div class="lamp">L</div>
-
-    <h1>
-      What can I help with?
-    </h1>
-
-    <p>
-      Ask me anything.
-    </p>
-
-    <div class="suggestions">
-
-      <button
-        class="suggestion"
-        data-text="Give me some good ideas for a project"
-      >
-        Give me ideas
+  <header>
+    <div class="header-group header-left">
+      <button class="header-button" id="historyButton" aria-label="Chat history">
+        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>
       </button>
-
-      <button
-        class="suggestion"
-        data-text="Explain something complicated in simple words"
-      >
-        Explain something
-      </button>
-
-      <button
-        class="suggestion"
-        data-text="Help me solve a problem"
-      >
-        Help me solve something
-      </button>
-
-      <button
-        class="suggestion"
-        data-text="Write something creative for me"
-      >
-        Create something
-      </button>
-
     </div>
 
-  </div>
+    <div class="logo"><span class="logo-dot"></span>LampAI</div>
 
+    <div class="header-group header-right">
+      <button class="header-button" id="newChat" aria-label="New chat">+</button>
+      <button class="header-button" id="settingsButton" aria-label="Settings">⚙</button>
+    </div>
+  </header>
+
+  <div id="chat"></div>
+
+  <div class="bottom">
+    <div class="attachments" id="attachments"></div>
+
+    <div id="attachMenu">
+      <button type="button" class="attach-option" id="imageOption">Add image</button>
+      <button type="button" class="attach-option" id="fileOption">Add file</button>
+    </div>
+
+    <input id="imageInput" type="file" accept="image/*" multiple hidden>
+    <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.pdf,.doc,.docx" multiple hidden>
+
+    <form class="composer" id="form">
+      <button type="button" class="icon" id="attach" aria-label="Attach">+</button>
+      <textarea id="input" rows="1" placeholder="Message LampAI..." autocomplete="off" enterkeyhint="send"></textarea>
+      <button type="button" class="icon" id="micButton" aria-label="Voice input">🎙</button>
+      <button class="send" id="send" type="submit" aria-label="Send">↑</button>
+    </form>
+
+    <div class="disclaimer">LampAI can make mistakes. Check important information.</div>
+  </div>
 </div>
 
-<div class="bottom">
-
-  <div
-    class="attachments"
-    id="attachments"
-  ></div>
-
-  <div id="attachMenu">
-
-    <button
-      type="button"
-      class="attach-option"
-      id="imageOption"
-    >
-      Add image
-    </button>
-
-    <button
-      type="button"
-      class="attach-option"
-      id="fileOption"
-    >
-      Add file
-    </button>
-
-  </div>
-
-  <input
-    id="imageInput"
-    type="file"
-    accept="image/*"
-    multiple
-    hidden
-  >
-
-  <input
-    id="fileInput"
-    type="file"
-    accept=".txt,.md,.csv,.json,.pdf,.doc,.docx"
-    multiple
-    hidden
-  >
-
-  <form
-    class="composer"
-    id="form"
-  >
-
-    <button
-      type="button"
-      class="icon"
-      id="attach"
-    >
-      +
-    </button>
-
-    <input
-      id="input"
-      type="text"
-      placeholder="Message LampAI..."
-      autocomplete="off"
-      enterkeyhint="send"
-    >
-
-    <button
-      type="button"
-      class="icon"
-      id="micButton"
-      aria-label="Voice input"
-    >
-      🎙
-    </button>
-
-    <button
-      class="send"
-      id="send"
-      type="submit"
-    >
-      ↑
-    </button>
-
-  </form>
-
-  <div class="disclaimer">
-    LampAI can make mistakes. Check important information.
-  </div>
-
+<div class="status-bar" id="statusBar">
+  <span id="statusText"></span>
+  <button id="statusAction" type="button" hidden>Reload</button>
 </div>
 
-</div>
+<div class="backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="historyDrawer" aria-label="Chat history">
+  <div class="drawer-top">
+    <h2>Chats</h2>
+    <button class="drawer-close" id="drawerClose" aria-label="Close">×</button>
+  </div>
+  <input class="history-search" id="historySearch" type="search" placeholder="Search chats">
+  <button class="history-new" id="drawerNewChat">New chat</button>
+  <div class="history-list" id="historyList"></div>
+</aside>
 
-<!-- AUTH -->
-
-<div
-  class="auth-overlay"
-  id="authOverlay"
->
-
+<div class="auth-overlay" id="authOverlay">
   <div class="auth-card">
-
-    <button
-      class="auth-close"
-      id="authClose"
-    >
-      ×
-    </button>
-
-    <h2 id="authTitle">
-      Sign in to LampAI
-    </h2>
-
-    <p id="authDescription">
-      Sign in to keep your LampAI account and settings.
-    </p>
-
-    <input
-      class="auth-field"
-      id="authEmail"
-      type="email"
-      placeholder="Email"
-      autocomplete="email"
-    >
-
-    <input
-      class="auth-field"
-      id="authPassword"
-      type="password"
-      placeholder="Password"
-      autocomplete="current-password"
-    >
-
-    <button
-      class="auth-google"
-      id="googleAuth"
-    >
-      Continue with Google
-    </button>
-
-    <div class="auth-divider">
-      or
-    </div>
-
-    <button
-      class="auth-submit"
-      id="authSubmit"
-    >
-      Sign In
-    </button>
-
-    <button
-      class="auth-switch"
-      id="authSwitch"
-    >
-      Need an account? Sign Up
-    </button>
-
-    <div
-      class="auth-status"
-      id="authStatus"
-    ></div>
-
+    <button class="auth-close" id="authClose">×</button>
+    <h2 id="authTitle">Sign in to LampAI</h2>
+    <p id="authDescription">Sign in to keep your LampAI account and settings.</p>
+    <input class="auth-field" id="authEmail" type="email" placeholder="Email" autocomplete="email">
+    <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="auth-google" id="googleAuth">Continue with Google</button>
+    <div class="auth-divider">or</div>
+    <button class="auth-submit" id="authSubmit">Sign In</button>
+    <button class="auth-switch" id="authSwitch">Need an account? Sign Up</button>
+    <div class="auth-status" id="authStatus"></div>
   </div>
-
 </div>
 
-<!-- SETTINGS -->
-
-<div
-  class="overlay"
-  id="overlay"
->
-
+<div class="overlay" id="overlay">
   <div class="settings">
-
     <div class="handle"></div>
 
     <div class="account-section">
-
       <div class="account-row">
-
-        <div
-          class="account-avatar"
-          id="accountAvatar"
-        >
-          👤
-        </div>
-
+        <div class="account-avatar" id="accountAvatar">👤</div>
         <div class="account-info">
-
-          <strong id="accountName">
-            Not signed in
-          </strong>
-
-          <span id="accountEmail">
-            Sign in to use your account
-          </span>
-
+          <strong id="accountName">Not signed in</strong>
+          <span id="accountEmail">Sign in to use your account</span>
         </div>
-
       </div>
-
-      <button
-        class="account-button"
-        id="accountButton"
-      >
-        Sign In
-      </button>
-
+      <button class="account-button" id="accountButton">Sign In</button>
     </div>
 
-    <h2>
-      Customize LampAI
-    </h2>
+    <h2>Customize LampAI</h2>
+    <p>Tell LampAI how you want it to talk and behave. You can change this whenever you want.</p>
+    <textarea id="instructions" placeholder="Example: Talk naturally, keep answers short, be funny and sarcastic. Don't use emojis unless I use them."></textarea>
 
-    <p>
-      Tell LampAI how you want it to talk and behave.
-      Keep it simple. You can change this whenever you want.
-    </p>
-
-    <textarea
-      id="instructions"
-      placeholder="Example: Talk naturally, keep answers short, be funny and sarcastic. Don't use emojis unless I use them."
-    ></textarea>
+    <div class="setting-row">
+      <div class="setting-row-title">Saved chats</div>
+      <div class="setting-row-sub">Chats are saved on this device so you can come back to them.</div>
+      <button class="danger-button" id="clearChats">Clear all chats</button>
+    </div>
 
     <div class="actions">
-
-      <button
-        class="cancel"
-        id="cancel"
-      >
-        Cancel
-      </button>
-
-      <button
-        class="save"
-        id="save"
-      >
-        Save
-      </button>
-
+      <button class="cancel" id="cancel">Cancel</button>
+      <button class="save" id="save">Save</button>
     </div>
-
   </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
+const SUPABASE_URL="https://oovmpejryqkyvcvpwncg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_PYK6F-mlPtkpBZvwW0_tfg_EJlatxqy";
+const {createClient}=supabase;
+const supabaseClient=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 
-const SUPABASE_URL =
-  "https://oovmpejryqkyvcvpwncg.supabase.co";
+const authOverlay=document.getElementById("authOverlay");
+const authClose=document.getElementById("authClose");
+const authTitle=document.getElementById("authTitle");
+const authDescription=document.getElementById("authDescription");
+const authEmail=document.getElementById("authEmail");
+const authPassword=document.getElementById("authPassword");
+const authSubmit=document.getElementById("authSubmit");
+const authSwitch=document.getElementById("authSwitch");
+const authStatus=document.getElementById("authStatus");
+const accountButton=document.getElementById("accountButton");
+const accountName=document.getElementById("accountName");
+const accountEmail=document.getElementById("accountEmail");
+const accountAvatar=document.getElementById("accountAvatar");
+let authMode="signin";
 
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_PYK6F-mlPtkpBZvwW0_tfg_EJlatxqy";
-
-const { createClient } = supabase;
-
-const supabaseClient =
-  createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
-
-const authOverlay =
-  document.getElementById(
-    "authOverlay"
-  );
-
-const authClose =
-  document.getElementById(
-    "authClose"
-  );
-
-const authTitle =
-  document.getElementById(
-    "authTitle"
-  );
-
-const authDescription =
-  document.getElementById(
-    "authDescription"
-  );
-
-const authEmail =
-  document.getElementById(
-    "authEmail"
-  );
-
-const authPassword =
-  document.getElementById(
-    "authPassword"
-  );
-
-const authSubmit =
-  document.getElementById(
-    "authSubmit"
-  );
-
-const authSwitch =
-  document.getElementById(
-    "authSwitch"
-  );
-
-const authStatus =
-  document.getElementById(
-    "authStatus"
-  );
-
-let authMode =
-  "signin";
-
-function openAuth(
-  mode = "signin"
-){
-
-  authMode =
-    mode;
-
-  authTitle.textContent =
-    mode === "signin"
-      ? "Sign in to LampAI"
-      : "Create your LampAI account";
-
-  authDescription.textContent =
-    mode === "signin"
-      ? "Sign in to keep your LampAI account and settings."
-      : "Create an account with your email and password.";
-
-  authSubmit.textContent =
-    mode === "signin"
-      ? "Sign In"
-      : "Sign Up";
-
-  authSwitch.textContent =
-    mode === "signin"
-      ? "Need an account? Sign Up"
-      : "Already have an account? Sign In";
-
-  authStatus.textContent =
-    "";
-
-  authOverlay.classList.add(
-    "open"
-  );
-
-  setTimeout(
-    () => authEmail.focus(),
-    50
-  );
+function openAuth(mode="signin"){
+  authMode=mode;
+  authTitle.textContent=mode==="signin"?"Sign in to LampAI":"Create your LampAI account";
+  authDescription.textContent=mode==="signin"
+    ?"Sign in to keep your LampAI account and settings."
+    :"Create an account with your email and password.";
+  authSubmit.textContent=mode==="signin"?"Sign In":"Sign Up";
+  authSwitch.textContent=mode==="signin"?"Need an account? Sign Up":"Already have an account? Sign In";
+  authStatus.textContent="";
+  authOverlay.classList.add("open");
 }
+function closeAuth(){authOverlay.classList.remove("open");authStatus.textContent=""}
 
-function closeAuth(){
-
-  authOverlay.classList.remove(
-    "open"
-  );
-
-  authStatus.textContent =
-    "";
-}
-
-const accountButton =
-  document.getElementById(
-    "accountButton"
-  );
-
-const accountName =
-  document.getElementById(
-    "accountName"
-  );
-
-const accountEmail =
-  document.getElementById(
-    "accountEmail"
-  );
-
-const accountAvatar =
-  document.getElementById(
-    "accountAvatar"
-  );
-
-async function updateAccountUI(
-  session
-){
-
+async function updateAccountUI(session){
   if(session?.user){
-
-    const email =
-      session.user.email ||
-      "Signed in";
-
-    accountName.textContent =
-      session.user.user_metadata?.full_name ||
-      session.user.user_metadata?.name ||
-      email.split("@")[0];
-
-    accountEmail.textContent =
-      email;
-
-    accountButton.textContent =
-      "Sign Out";
-
-    const avatar =
-      session.user.user_metadata?.avatar_url ||
-      session.user.user_metadata?.picture;
-
-    accountAvatar.innerHTML =
-      avatar
-        ? `<img src="${avatar}" alt="">`
-        : "👤";
-
+    const email=session.user.email||"Signed in";
+    accountName.textContent=session.user.user_metadata?.full_name||session.user.user_metadata?.name||email.split("@")[0];
+    accountEmail.textContent=email;
+    accountButton.textContent="Sign Out";
+    const avatar=session.user.user_metadata?.avatar_url||session.user.user_metadata?.picture;
+    accountAvatar.innerHTML=avatar?`<img src="${avatar}" alt="">`:"👤";
   }else{
-
-    accountName.textContent =
-      "Not signed in";
-
-    accountEmail.textContent =
-      "Sign in to use your account";
-
-    accountButton.textContent =
-      "Sign In";
-
-    accountAvatar.textContent =
-      "👤";
+    accountName.textContent="Not signed in";
+    accountEmail.textContent="Sign in to use your account";
+    accountButton.textContent="Sign In";
+    accountAvatar.textContent="👤";
   }
 }
+accountButton.onclick=async()=>{
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  if(session){
+    await supabaseClient.auth.signOut();
+    updateAccountUI(null);
+  }else openAuth("signin");
+};
+authClose.onclick=closeAuth;
+authOverlay.addEventListener("click",e=>{if(e.target===authOverlay)closeAuth()});
+authSwitch.onclick=()=>openAuth(authMode==="signin"?"signup":"signin");
 
-accountButton.onclick =
-  async () => {
-
-    const {
-      data:{
-        session
-      }
-    } =
-      await supabaseClient.auth.getSession();
-
-    if(session){
-
-      await supabaseClient.auth.signOut();
-
-      updateAccountUI(
-        null
-      );
-
-    }else{
-
-      openAuth(
-        "signin"
-      );
-    }
-  };
-
-authClose.onclick =
-  closeAuth;
-
-authOverlay.addEventListener(
-  "click",
-  e => {
-
-    if(
-      e.target === authOverlay
-    ){
-      closeAuth();
-    }
-  }
-);
-
-authSwitch.onclick =
-  () => {
-
-    openAuth(
-      authMode === "signin"
-        ? "signup"
-        : "signin"
-    );
-  };
-
-document.getElementById(
-  "googleAuth"
-).onclick =
-  async () => {
-
-    authStatus.textContent =
-      "Opening Google...";
-
-    const {
-      error
-    } =
-      await supabaseClient.auth.signInWithOAuth({
-
-        provider:
-          "google",
-
-        options:{
-          redirectTo:
-            "https://cohencurleee-cloud.github.io/LAMPAI/"
-        }
-      });
-
-    if(error){
-
-      authStatus.textContent =
-        error.message ||
-        "Google sign-in failed.";
-    }
-  };
-
-authSubmit.onclick =
-  async () => {
-
-    const email =
-      authEmail.value.trim();
-
-    const password =
-      authPassword.value;
-
-    if(
-      !email ||
-      !password
-    ){
-
-      authStatus.textContent =
-        "Enter your email and password.";
-
+document.getElementById("googleAuth").onclick=async()=>{
+  authStatus.textContent="Opening Google...";
+  const {error}=await supabaseClient.auth.signInWithOAuth({
+    provider:"google",
+    options:{redirectTo:`${location.origin}/`}
+  });
+  if(error) authStatus.textContent=error.message||"Google sign-in failed.";
+};
+authSubmit.onclick=async()=>{
+  const email=authEmail.value.trim();
+  const password=authPassword.value;
+  if(!email||!password){authStatus.textContent="Enter your email and password.";return}
+  if(password.length<6){authStatus.textContent="Password must be at least 6 characters.";return}
+  authSubmit.disabled=true;
+  authStatus.textContent=authMode==="signin"?"Signing in...":"Creating account...";
+  try{
+    const result=authMode==="signin"
+      ?await supabaseClient.auth.signInWithPassword({email,password})
+      :await supabaseClient.auth.signUp({email,password});
+    if(result.error)throw result.error;
+    if(authMode==="signup"&&!result.data.session){
+      authStatus.textContent="Account created. Check your email to confirm your account.";
       return;
     }
-
-    if(
-      password.length < 6
-    ){
-
-      authStatus.textContent =
-        "Password must be at least 6 characters.";
-
-      return;
-    }
-
-    authSubmit.disabled =
-      true;
-
-    authStatus.textContent =
-      authMode === "signin"
-        ? "Signing in..."
-        : "Creating account...";
-
-    try{
-
-      let result;
-
-      if(
-        authMode === "signin"
-      ){
-
-        result =
-          await supabaseClient.auth.signInWithPassword({
-            email,
-            password
-          });
-
-      }else{
-
-        result =
-          await supabaseClient.auth.signUp({
-            email,
-            password
-          });
-      }
-
-      if(
-        result.error
-      ){
-        throw result.error;
-      }
-
-      if(
-        authMode === "signup" &&
-        !result.data.session
-      ){
-
-        authStatus.textContent =
-          "Account created. Check your email to confirm your account.";
-
-        return;
-      }
-
-      authStatus.textContent =
-        "You're signed in.";
-
-      authOverlay.classList.remove(
-        "open"
-      );
-
-      authEmail.value =
-        "";
-
-      authPassword.value =
-        "";
-
-    }catch(error){
-
-      authStatus.textContent =
-        error.message ||
-        "Authentication failed.";
-
-    }finally{
-
-      authSubmit.disabled =
-        false;
-    }
-  };
-
-supabaseClient.auth.onAuthStateChange(
-  (event,session) => {
-
-    updateAccountUI(
-      session
-    );
-  }
-);
-
-(async () => {
-
-  const {
-    data:{
-      session
-    }
-  } =
-    await supabaseClient.auth.getSession();
-
-  updateAccountUI(
-    session
-  );
-
-  if(
-    !session
-  ){
-    openAuth(
-      "signin"
-    );
-  }
-
+    closeAuth();
+    authEmail.value="";
+    authPassword.value="";
+  }catch(error){
+    authStatus.textContent=error.message||"Authentication failed.";
+  }finally{authSubmit.disabled=false}
+};
+supabaseClient.auth.onAuthStateChange((event,session)=>updateAccountUI(session));
+(async()=>{
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  updateAccountUI(session);
+  if(!session)openAuth("signin");
 })();
-
 </script>
 
 <script>
+const CHAT_API_URL="/api/chat";
+const STORAGE_KEY="lampai_chats_v2";
+const ACTIVE_KEY="lampai_active_chat_v2";
+const MAX_CHATS=30;
+const MAX_CONTEXT_MESSAGES=14;
 
-const CHAT_API_URL =
-  "/api/chat";
+const chat=document.getElementById("chat");
+const input=document.getElementById("input");
+const form=document.getElementById("form");
+const send=document.getElementById("send");
+const overlay=document.getElementById("overlay");
+const instructions=document.getElementById("instructions");
+const attach=document.getElementById("attach");
+const attachMenu=document.getElementById("attachMenu");
+const imageInput=document.getElementById("imageInput");
+const fileInput=document.getElementById("fileInput");
+const attachmentsEl=document.getElementById("attachments");
+const historyDrawer=document.getElementById("historyDrawer");
+const drawerBackdrop=document.getElementById("drawerBackdrop");
+const historyList=document.getElementById("historyList");
+const historySearch=document.getElementById("historySearch");
+const statusBar=document.getElementById("statusBar");
+const statusText=document.getElementById("statusText");
+const statusAction=document.getElementById("statusAction");
+const micButton=document.getElementById("micButton");
 
-const chat =
-  document.getElementById(
-    "chat"
-  );
+let selectedAttachments=[];
+let chats=loadChats();
+let activeChatId=localStorage.getItem(ACTIVE_KEY)||"";
+let requestController=null;
+let typingTimer=null;
+let generating=false;
 
-const input =
-  document.getElementById(
-    "input"
-  );
-
-const form =
-  document.getElementById(
-    "form"
-  );
-
-const send =
-  document.getElementById(
-    "send"
-  );
-
-const overlay =
-  document.getElementById(
-    "overlay"
-  );
-
-const instructions =
-  document.getElementById(
-    "instructions"
-  );
-
-const attach =
-  document.getElementById(
-    "attach"
-  );
-
-const attachMenu =
-  document.getElementById(
-    "attachMenu"
-  );
-
-const imageInput =
-  document.getElementById(
-    "imageInput"
-  );
-
-const fileInput =
-  document.getElementById(
-    "fileInput"
-  );
-
-const attachmentsEl =
-  document.getElementById(
-    "attachments"
-  );
-
-let selectedAttachments =
-  [];
-
-attach.onclick =
-  e => {
-
-    e.stopPropagation();
-
-    attachMenu.classList.toggle(
-      "open"
-    );
-  };
-
-document.getElementById(
-  "imageOption"
-).onclick =
-  () => {
-
-    attachMenu.classList.remove(
-      "open"
-    );
-
-    imageInput.click();
-  };
-
-document.getElementById(
-  "fileOption"
-).onclick =
-  () => {
-
-    attachMenu.classList.remove(
-      "open"
-    );
-
-    fileInput.click();
-  };
-
-document.addEventListener(
-  "click",
-  e => {
-
-    if(
-      !attachMenu.contains(
-        e.target
-      ) &&
-      e.target !== attach
-    ){
-
-      attachMenu.classList.remove(
-        "open"
-      );
-    }
-  }
-);
-
-function renderAttachments(){
-
-  attachmentsEl.innerHTML =
-    "";
-
-  selectedAttachments.forEach(
-    (file,i) => {
-
-      const preview =
-        document.createElement(
-          "div"
-        );
-
-      preview.className =
-        "attachment-preview " +
-        (
-          file.type.startsWith(
-            "image/"
-          )
-            ? "image-preview"
-            : "file-preview"
-        );
-
-      if(
-        file.type.startsWith(
-          "image/"
-        )
-      ){
-
-        const img =
-          document.createElement(
-            "img"
-          );
-
-        const url =
-          URL.createObjectURL(
-            file
-          );
-
-        img.src =
-          url;
-
-        img.alt =
-          file.name;
-
-        img.onload =
-          () =>
-            URL.revokeObjectURL(
-              url
-            );
-
-        preview.appendChild(
-          img
-        );
-
-      }else{
-
-        preview.title =
-          file.name;
-
-        preview.appendChild(
-          document.createTextNode(
-            file.name
-          )
-        );
-      }
-
-      const remove =
-        document.createElement(
-          "button"
-        );
-
-      remove.type =
-        "button";
-
-      remove.className =
-        "remove-attachment";
-
-      remove.textContent =
-        "×";
-
-      remove.setAttribute(
-        "aria-label",
-        `Remove ${file.name}`
-      );
-
-      remove.onclick =
-        () => {
-
-          selectedAttachments.splice(
-            i,
-            1
-          );
-
-          renderAttachments();
-        };
-
-      preview.appendChild(
-        remove
-      );
-
-      attachmentsEl.appendChild(
-        preview
-      );
-    }
-  );
+function uid(){
+  return (window.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`);
 }
-
-function addFiles(files){
-
-  for(
-    const file of files
-  ){
-
-    if(
-      selectedAttachments.length >= 5
-    ){
-      break;
+function loadChats(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+    return Array.isArray(parsed)?parsed:[];
+  }catch{return[]}
+}
+function saveChats(){
+  chats=chats.sort((a,b)=>(b.updated||0)-(a.updated||0)).slice(0,MAX_CHATS);
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(chats));
+  if(activeChatId)localStorage.setItem(ACTIVE_KEY,activeChatId);
+  renderHistory();
+}
+function getActiveChat(){return chats.find(c=>c.id===activeChatId)||null}
+function createChat(){
+  const item={id:uid(),title:"New chat",created:Date.now(),updated:Date.now(),messages:[]};
+  chats.unshift(item);
+  activeChatId=item.id;
+  saveChats();
+  return item;
+}
+function ensureChat(){return getActiveChat()||createChat()}
+function titleFromText(text){
+  const clean=String(text||"").replace(/\s+/g," ").trim();
+  return clean?(clean.length>38?clean.slice(0,38)+"…":clean):"Image or file";
+}
+function addStoredMessage(role,text,attachmentNames=[]){
+  const c=ensureChat();
+  c.messages.push({role,text:String(text||""),attachments:attachmentNames.slice(0,5),time:Date.now()});
+  if(c.title==="New chat"&&role==="user")c.title=titleFromText(text||attachmentNames[0]||"");
+  c.updated=Date.now();
+  saveChats();
+}
+function formatTime(ts){
+  const d=new Date(ts||Date.now());
+  const now=new Date();
+  if(d.toDateString()===now.toDateString())return d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  return d.toLocaleDateString([],{month:"short",day:"numeric"});
+}
+function renderHistory(){
+  const q=historySearch.value.trim().toLowerCase();
+  const items=chats.filter(c=>!q||c.title.toLowerCase().includes(q));
+  historyList.innerHTML="";
+  if(!items.length){
+    const empty=document.createElement("div");
+    empty.className="history-empty";
+    empty.textContent=q?"No matching chats.":"Your chats will show up here.";
+    historyList.appendChild(empty);
+    return;
+  }
+  items.forEach(c=>{
+    const row=document.createElement("div");
+    row.className="history-item"+(c.id===activeChatId?" active":"");
+    row.tabIndex=0;
+    row.setAttribute("role","button");
+    const title=document.createElement("span");
+    title.className="history-title";
+    title.textContent=c.title;
+    const time=document.createElement("span");
+    time.className="history-time";
+    time.textContent=formatTime(c.updated);
+    const del=document.createElement("button");
+    del.type="button";
+    del.className="history-delete";
+    del.textContent="×";
+    del.setAttribute("aria-label","Delete chat");
+    del.onclick=e=>{
+      e.stopPropagation();
+      chats=chats.filter(x=>x.id!==c.id);
+      if(activeChatId===c.id)activeChatId=chats[0]?.id||"";
+      saveChats();
+      renderActiveChat();
+    };
+    row.append(title,time,del);
+    const openThisChat=()=>{
+      activeChatId=c.id;
+      localStorage.setItem(ACTIVE_KEY,activeChatId);
+      closeDrawer();
+      renderActiveChat();
+      renderHistory();
+    };
+    row.onclick=openThisChat;
+    row.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openThisChat()}};
+    historyList.appendChild(row);
+  });
+}
+function welcomeHTML(){
+  return `
+    <div class="welcome">
+      <div class="lamp">L</div>
+      <h1>What can I help with?</h1>
+      <p>Ask me anything.</p>
+      <div class="suggestions">
+        <button class="suggestion" data-text="Give me some good ideas for a project">Give me ideas</button>
+        <button class="suggestion" data-text="Explain something complicated in simple words">Explain something</button>
+        <button class="suggestion" data-text="Help me solve a problem">Help me solve something</button>
+        <button class="suggestion" data-text="Write something creative for me">Create something</button>
+      </div>
+    </div>`;
+}
+function activateSuggestions(){
+  document.querySelectorAll(".suggestion").forEach(button=>{
+    button.onclick=()=>{
+      input.value=button.dataset.text;
+      autoGrow();
+      input.focus();
+    };
+  });
+}
+function renderActiveChat(){
+  stopGeneration();
+  const c=getActiveChat();
+  chat.innerHTML="";
+  if(!c||!c.messages.length){
+    chat.innerHTML=welcomeHTML();
+    activateSuggestions();
+    return;
+  }
+  c.messages.forEach((m,index)=>{
+    if(m.role==="user"){
+      addUserMessage(m.text,[],m.attachments||[],false);
+    }else{
+      addAIMessage(m.text,false,index===c.messages.length-1);
     }
+  });
+  chat.scrollTop=chat.scrollHeight;
+}
+function openDrawer(){historyDrawer.classList.add("open");drawerBackdrop.classList.add("open");renderHistory()}
+function closeDrawer(){historyDrawer.classList.remove("open");drawerBackdrop.classList.remove("open")}
+document.getElementById("historyButton").onclick=openDrawer;
+document.getElementById("drawerClose").onclick=closeDrawer;
+drawerBackdrop.onclick=closeDrawer;
+historySearch.oninput=renderHistory;
+document.getElementById("drawerNewChat").onclick=()=>{startNewChat();closeDrawer()};
 
-    const duplicate =
-      selectedAttachments.some(
-        x =>
-          x.name === file.name &&
-          x.size === file.size &&
-          x.lastModified === file.lastModified
-      );
+function startNewChat(){
+  stopGeneration();
+  createChat();
+  selectedAttachments=[];
+  renderAttachments();
+  input.value="";
+  autoGrow();
+  renderActiveChat();
+}
+document.getElementById("newChat").onclick=startNewChat;
 
-    if(
-      file.size >
-      3.2 * 1024 * 1024
-    ){
+instructions.value=localStorage.getItem("lampai_instructions")||"";
+document.getElementById("settingsButton").onclick=()=>overlay.classList.add("open");
+document.getElementById("cancel").onclick=()=>overlay.classList.remove("open");
+document.getElementById("save").onclick=()=>{
+  localStorage.setItem("lampai_instructions",instructions.value.trim());
+  overlay.classList.remove("open");
+};
+overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.classList.remove("open")});
+document.getElementById("clearChats").onclick=()=>{
+  if(!confirm("Clear all saved LampAI chats on this device?"))return;
+  chats=[];activeChatId="";
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(ACTIVE_KEY);
+  createChat();
+  renderActiveChat();
+  overlay.classList.remove("open");
+};
 
-      alert(
-        `${file.name} is too large. Keep each attachment under about 3 MB for this web build.`
-      );
-
+attach.onclick=e=>{e.stopPropagation();attachMenu.classList.toggle("open")};
+document.getElementById("imageOption").onclick=()=>{attachMenu.classList.remove("open");imageInput.click()};
+document.getElementById("fileOption").onclick=()=>{attachMenu.classList.remove("open");fileInput.click()};
+document.addEventListener("click",e=>{
+  if(!attachMenu.contains(e.target)&&e.target!==attach)attachMenu.classList.remove("open");
+});
+function renderAttachments(){
+  attachmentsEl.innerHTML="";
+  selectedAttachments.forEach((file,i)=>{
+    const preview=document.createElement("div");
+    preview.className="attachment-preview "+(file.type.startsWith("image/")?"image-preview":"file-preview");
+    if(file.type.startsWith("image/")){
+      const img=document.createElement("img");
+      const url=URL.createObjectURL(file);
+      img.src=url;img.alt=file.name;img.onload=()=>URL.revokeObjectURL(url);
+      preview.appendChild(img);
+    }else{
+      preview.title=file.name;
+      preview.appendChild(document.createTextNode(file.name));
+    }
+    const remove=document.createElement("button");
+    remove.type="button";remove.className="remove-attachment";remove.textContent="×";
+    remove.onclick=()=>{selectedAttachments.splice(i,1);renderAttachments()};
+    preview.appendChild(remove);
+    attachmentsEl.appendChild(preview);
+  });
+}
+function addFiles(files){
+  for(const file of files){
+    if(selectedAttachments.length>=5)break;
+    const duplicate=selectedAttachments.some(x=>x.name===file.name&&x.size===file.size&&x.lastModified===file.lastModified);
+    if(file.size>3.2*1024*1024){
+      alert(`${file.name} is too large. Keep each attachment under about 3 MB.`);
       continue;
     }
-
-    if(
-      !duplicate
-    ){
-      selectedAttachments.push(
-        file
-      );
-    }
+    if(!duplicate)selectedAttachments.push(file);
   }
-
   renderAttachments();
 }
-
-async function normalizeImageFile(
-  file
-){
-
+async function normalizeImageFile(file){
   try{
-
-    const url =
-      URL.createObjectURL(
-        file
-      );
-
-    const img =
-      new Image();
-
-    await new Promise(
-      (resolve,reject) => {
-
-        img.onload =
-          resolve;
-
-        img.onerror =
-          reject;
-
-        img.src =
-          url;
-      }
-    );
-
-    const maxSide =
-      1600;
-
-    const scale =
-      Math.min(
-        1,
-        maxSide /
-          Math.max(
-            img.naturalWidth,
-            img.naturalHeight
-          )
-      );
-
-    const width =
-      Math.max(
-        1,
-        Math.round(
-          img.naturalWidth *
-          scale
-        )
-      );
-
-    const height =
-      Math.max(
-        1,
-        Math.round(
-          img.naturalHeight *
-          scale
-        )
-      );
-
-    const canvas =
-      document.createElement(
-        "canvas"
-      );
-
-    canvas.width =
-      width;
-
-    canvas.height =
-      height;
-
-    const ctx =
-      canvas.getContext(
-        "2d"
-      );
-
-    ctx.drawImage(
-      img,
-      0,
-      0,
-      width,
-      height
-    );
-
-    URL.revokeObjectURL(
-      url
-    );
-
-    const blob =
-      await new Promise(
-        resolve =>
-          canvas.toBlob(
-            resolve,
-            "image/jpeg",
-            0.84
-          )
-      );
-
-    if(
-      !blob
-    ){
-      return file;
-    }
-
-    const cleanName =
-      file.name.replace(
-        /\.[^.]+$/,
-        ""
-      ) +
-      ".jpg";
-
-    return new File(
-      [blob],
-      cleanName,
-      {
-        type:
-          "image/jpeg",
-
-        lastModified:
-          Date.now()
-      }
-    );
-
-  }catch{
-
-    return file;
-  }
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url});
+    const maxSide=1600;
+    const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+    const canvas=document.createElement("canvas");
+    canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+    canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+    URL.revokeObjectURL(url);
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.84));
+    if(!blob)return file;
+    return new File([blob],file.name.replace(/\.[^.]+$/ ,"")+".jpg",{type:"image/jpeg",lastModified:Date.now()});
+  }catch{return file}
 }
+imageInput.onchange=async e=>{
+  const normalized=[];
+  for(const file of [...e.target.files])normalized.push(await normalizeImageFile(file));
+  imageInput.value="";
+  addFiles(normalized);
+};
+fileInput.onchange=e=>{addFiles([...e.target.files]);fileInput.value=""};
 
-imageInput.onchange =
-  async e => {
-
-    const picked =
-      [
-        ...e.target.files
-      ];
-
-    imageInput.value =
-      "";
-
-    const normalized =
-      [];
-
-    for(
-      const file of picked
-    ){
-
-      normalized.push(
-        await normalizeImageFile(
-          file
-        )
-      );
-    }
-
-    addFiles(
-      normalized
-    );
-  };
-
-fileInput.onchange =
-  e => {
-
-    addFiles(
-      [
-        ...e.target.files
-      ]
-    );
-
-    fileInput.value =
-      "";
-  };
-
-function fileToDataURL(
-  file
-){
-
-  return new Promise(
-    (resolve,reject) => {
-
-      const reader =
-        new FileReader();
-
-      reader.onload =
-        () =>
-          resolve(
-            reader.result
-          );
-
-      reader.onerror =
-        reject;
-
-      reader.readAsDataURL(
-        file
-      );
-    }
-  );
+function fileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);
+  });
 }
-
-function isTextFile(
-  file
-){
-
-  return (
-    file.type.startsWith(
-      "text/"
-    ) ||
-    /\.(txt|md|csv|json)$/i.test(
-      file.name
-    )
-  );
-}
-
-async function serializeAttachment(
-  file
-){
-
-  const textFile =
-    isTextFile(
-      file
-    );
-
+function isTextFile(file){return file.type.startsWith("text/")||/\.(txt|md|csv|json)$/i.test(file.name)}
+async function serializeAttachment(file){
+  const textFile=isTextFile(file);
   return {
-
-    name:
-      file.name,
-
-    type:
-      file.type ||
-      "application/octet-stream",
-
-    size:
-      file.size,
-
-    kind:
-      file.type.startsWith(
-        "image/"
-      )
-        ? "image"
-        : "file",
-
-    encoding:
-      textFile
-        ? "text"
-        : "data-url",
-
-    content:
-      textFile
-        ? await file.text()
-        : await fileToDataURL(
-            file
-          )
+    name:file.name,
+    type:file.type||"application/octet-stream",
+    size:file.size,
+    kind:file.type.startsWith("image/")?"image":"file",
+    encoding:textFile?"text":"data-url",
+    content:textFile?await file.text():await fileToDataURL(file)
   };
 }
 
-instructions.value =
-  localStorage.getItem(
-    "lampai_instructions"
-  ) || "";
+function addUserMessage(text,files=[],savedNames=[],persist=true){
+  const wrapper=document.createElement("div");
+  wrapper.className="message user";
+  const bubble=document.createElement("div");
+  bubble.className="bubble";
+  const names=savedNames.length?savedNames:files.map(f=>f.name);
 
-document.getElementById(
-  "settingsButton"
-).onclick =
-  () => {
-
-    overlay.classList.add(
-      "open"
-    );
-  };
-
-document.getElementById(
-  "cancel"
-).onclick =
-  () => {
-
-    overlay.classList.remove(
-      "open"
-    );
-  };
-
-document.getElementById(
-  "save"
-).onclick =
-  () => {
-
-    localStorage.setItem(
-      "lampai_instructions",
-      instructions.value.trim()
-    );
-
-    overlay.classList.remove(
-      "open"
-    );
-  };
-
-overlay.addEventListener(
-  "click",
-  e => {
-
-    if(
-      e.target === overlay
-    ){
-
-      overlay.classList.remove(
-        "open"
-      );
-    }
+  if(files.length){
+    const sent=document.createElement("div");
+    sent.className="sent-attachments";
+    files.forEach(file=>{
+      if(file.type.startsWith("image/")){
+        const img=document.createElement("img");
+        const url=URL.createObjectURL(file);
+        img.className="sent-image";img.src=url;img.alt=file.name;img.onload=()=>URL.revokeObjectURL(url);
+        sent.appendChild(img);
+      }else{
+        const fileEl=document.createElement("div");
+        fileEl.className="sent-file";fileEl.textContent=file.name;sent.appendChild(fileEl);
+      }
+    });
+    bubble.appendChild(sent);
+  }else if(names.length){
+    const sent=document.createElement("div");
+    sent.className="sent-attachments";
+    names.forEach(name=>{
+      const el=document.createElement("div");
+      el.className="sent-file";el.textContent=name;sent.appendChild(el);
+    });
+    bubble.appendChild(sent);
   }
-);
-
-document.getElementById(
-  "newChat"
-).onclick =
-  () => {
-
-    chat.innerHTML =
-      `
-      <div class="welcome">
-
-        <div class="lamp">
-          L
-        </div>
-
-        <h1>
-          What can I help with?
-        </h1>
-
-        <p>
-          Ask me anything.
-        </p>
-
-        <div class="suggestions">
-
-          <button
-            class="suggestion"
-            data-text="Give me some good ideas for a project"
-          >
-            Give me ideas
-          </button>
-
-          <button
-            class="suggestion"
-            data-text="Explain something complicated in simple words"
-          >
-            Explain something
-          </button>
-
-          <button
-            class="suggestion"
-            data-text="Help me solve a problem"
-          >
-            Help me solve something
-          </button>
-
-          <button
-            class="suggestion"
-            data-text="Write something creative for me"
-          >
-            Create something
-          </button>
-
-        </div>
-
-      </div>
-      `;
-
-    activateSuggestions();
-  };
-
-function activateSuggestions(){
-
-  document.querySelectorAll(
-    ".suggestion"
-  ).forEach(
-    button => {
-
-      button.onclick =
-        () => {
-
-          input.value =
-            button.dataset.text;
-
-          input.focus();
-        };
-    }
-  );
-}
-
-activateSuggestions();
-
-function addMessage(
-  text,
-  type
-){
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-  wrapper.className =
-    "message " +
-    type;
-
-  const bubble =
-    document.createElement(
-      "div"
-    );
-
-  bubble.className =
-    "bubble";
-
-  bubble.textContent =
-    text;
-
-  wrapper.appendChild(
-    bubble
-  );
-
-  chat.appendChild(
-    wrapper
-  );
-
-  chat.scrollTop =
-    chat.scrollHeight;
-
+  if(text){
+    const textEl=document.createElement("div");
+    textEl.className="user-text";textEl.textContent=text;bubble.appendChild(textEl);
+  }
+  wrapper.appendChild(bubble);
+  chat.appendChild(wrapper);
+  chat.scrollTop=chat.scrollHeight;
+  if(persist)addStoredMessage("user",text,names);
   return wrapper;
 }
-
+function actionButton(label,handler){
+  const b=document.createElement("button");
+  b.type="button";b.className="message-action";b.textContent=label;b.onclick=handler;
+  return b;
+}
+function addAIMessage(text,persist=true,isLast=true){
+  const cleaned=cleanDisplayText(text);
+  const wrapper=document.createElement("div");
+  wrapper.className="message ai";
+  const bubble=document.createElement("div");
+  bubble.className="bubble";bubble.textContent=cleaned;
+  wrapper.appendChild(bubble);
+  const actions=document.createElement("div");
+  actions.className="message-actions";
+  actions.appendChild(actionButton("Copy",async e=>{
+    await navigator.clipboard?.writeText(cleaned).catch(()=>{});
+    e.currentTarget.textContent="Copied";
+    setTimeout(()=>e.currentTarget.textContent="Copy",900);
+  }));
+  if(isLast)actions.appendChild(actionButton("Regenerate",()=>regenerateLast()));
+  wrapper.appendChild(actions);
+  chat.appendChild(wrapper);
+  chat.scrollTop=chat.scrollHeight;
+  if(persist)addStoredMessage("assistant",cleaned);
+  return wrapper;
+}
 function addThinkingMessage(){
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-  wrapper.className =
-    "message ai";
-
-  const bubble =
-    document.createElement(
-      "div"
-    );
-
-  bubble.className =
-    "bubble thinking";
-
-  for(
-    let i = 0;
-    i < 3;
-    i++
-  ){
-
-    const dot =
-      document.createElement(
-        "span"
-      );
-
-    dot.className =
-      "thinking-dot";
-
-    bubble.appendChild(
-      dot
-    );
-  }
-
-  wrapper.appendChild(
-    bubble
-  );
-
-  chat.appendChild(
-    wrapper
-  );
-
-  chat.scrollTop =
-    chat.scrollHeight;
-
+  const wrapper=document.createElement("div");
+  wrapper.className="message ai";
+  const bubble=document.createElement("div");
+  bubble.className="bubble thinking";
+  for(let i=0;i<3;i++){const dot=document.createElement("span");dot.className="thinking-dot";bubble.appendChild(dot)}
+  wrapper.appendChild(bubble);chat.appendChild(wrapper);chat.scrollTop=chat.scrollHeight;
   return wrapper;
 }
-
-function cleanDisplayText(
-  text = ""
-){
-
-  return String(
-    text
-  )
-    .replace(
-      /<think>[\s\S]*?<\/think>/gi,
-      ""
-    )
-    .replace(
-      /<think>[\s\S]*/gi,
-      ""
-    )
-    .replace(
-      /\*\*/g,
-      ""
-    )
-    .replace(
-      /^\s*\*\s+/gm,
-      ""
-    )
+function cleanDisplayText(text=""){
+  return String(text)
+    .replace(/<think>[\s\S]*?<\/think>/gi,"")
+    .replace(/<think>[\s\S]*/gi,"")
+    .replace(/\*\*/g,"")
+    .replace(/^\s*\*\s+/gm,"")
     .trim();
 }
-
-function typeAIMessage(
-  text
-){
-
-  const cleaned =
-    cleanDisplayText(
-      text
-    );
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-  wrapper.className =
-    "message ai";
-
-  const bubble =
-    document.createElement(
-      "div"
-    );
-
-  bubble.className =
-    "bubble";
-
-  wrapper.appendChild(
-    bubble
-  );
-
-  chat.appendChild(
-    wrapper
-  );
-
-  const chunks =
-    cleaned.match(
-      /\S+\s*/g
-    ) ||
-    [
-      cleaned
-    ];
-
-  let index =
-    0;
-
-  const timer =
-    setInterval(
-      () => {
-
-        if(
-          index >= chunks.length
-        ){
-
-          clearInterval(
-            timer
-          );
-
-          return;
-        }
-
-        const amount =
-          Math.min(
-            3,
-            chunks.length -
-            index
-          );
-
-        for(
-          let i = 0;
-          i < amount;
-          i++
-        ){
-
-          bubble.textContent +=
-            chunks[
-              index++
-            ];
-        }
-
-        chat.scrollTop =
-          chat.scrollHeight;
-
-      },
-      32
-    );
-
-  return wrapper;
+function setGenerating(on){
+  generating=on;
+  send.classList.toggle("stop",on);
+  send.textContent=on?"■":"↑";
+  send.setAttribute("aria-label",on?"Stop":"Send");
+  input.disabled=false;
 }
-
-function addUserMessage(
-  text,
-  files
-){
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-  wrapper.className =
-    "message user";
-
-  const bubble =
-    document.createElement(
-      "div"
-    );
-
-  bubble.className =
-    "bubble";
-
-  if(
-    files.length
-  ){
-
-    const sent =
-      document.createElement(
-        "div"
-      );
-
-    sent.className =
-      "sent-attachments";
-
-    files.forEach(
-      file => {
-
-        if(
-          file.type.startsWith(
-            "image/"
-          )
-        ){
-
-          const img =
-            document.createElement(
-              "img"
-            );
-
-          const url =
-            URL.createObjectURL(
-              file
-            );
-
-          img.className =
-            "sent-image";
-
-          img.src =
-            url;
-
-          img.alt =
-            file.name;
-
-          img.onload =
-            () =>
-              URL.revokeObjectURL(
-                url
-              );
-
-          sent.appendChild(
-            img
-          );
-
-        }else{
-
-          const fileEl =
-            document.createElement(
-              "div"
-            );
-
-          fileEl.className =
-            "sent-file";
-
-          fileEl.textContent =
-            file.name;
-
-          fileEl.title =
-            file.name;
-
-          sent.appendChild(
-            fileEl
-          );
-        }
-      }
-    );
-
-    bubble.appendChild(
-      sent
-    );
-  }
-
-  if(
-    text
-  ){
-
-    const textEl =
-      document.createElement(
-        "div"
-      );
-
-    textEl.className =
-      "user-text";
-
-    textEl.textContent =
-      text;
-
-    bubble.appendChild(
-      textEl
-    );
-  }
-
-  wrapper.appendChild(
-    bubble
-  );
-
-  chat.appendChild(
-    wrapper
-  );
-
-  chat.scrollTop =
-    chat.scrollHeight;
-
-  return wrapper;
+function stopGeneration(){
+  if(requestController){requestController.abort();requestController=null}
+  if(typingTimer){clearInterval(typingTimer);typingTimer=null}
+  setGenerating(false);
 }
-
-form.addEventListener(
-  "submit",
-  async e => {
-
-    e.preventDefault();
-
-    const text =
-      input.value.trim();
-
-    const outgoingAttachments =
-      [
-        ...selectedAttachments
-      ];
-
-    if(
-      !text &&
-      outgoingAttachments.length === 0
-    ){
-      return;
-    }
-
-    const welcome =
-      document.querySelector(
-        ".welcome"
-      );
-
-    if(
-      welcome
-    ){
-      welcome.remove();
-    }
-
-    addUserMessage(
-      text,
-      outgoingAttachments
-    );
-
-    input.value =
-      "";
-
-    input.disabled =
-      true;
-
-    send.disabled =
-      true;
-
-    const thinking =
-      addThinkingMessage();
-
-    try{
-
-      if(
-        location.hostname.endsWith(
-          "github.io"
-        ) &&
-        CHAT_API_URL.startsWith(
-          "/"
-        )
-      ){
-
-        throw new Error(
-          "LampAI is on GitHub Pages, but CHAT_API_URL still points to /api/chat. Set CHAT_API_URL to the full Vercel API URL."
-        );
-      }
-
-      const response =
-        await fetch(
-          CHAT_API_URL,
-          {
-
-            method:
-              "POST",
-
-            headers:{
-              "Content-Type":
-                "application/json"
-            },
-
-            body:
-              JSON.stringify({
-
-                message:
-                  text,
-
-                instructions:
-                  localStorage.getItem(
-                    "lampai_instructions"
-                  ) || "",
-
-                attachments:
-                  await Promise.all(
-                    outgoingAttachments.map(
-                      serializeAttachment
-                    )
-                  )
-              })
-          }
-        );
-
-      const raw =
-        await response.text();
-
-      let data =
-        {};
-
-      try{
-
-        data =
-          raw
-            ? JSON.parse(
-                raw
-              )
-            : {};
-
-      }catch{
-
-        data = {
-          error:
-            raw ||
-            "The server returned an invalid response."
-        };
-      }
-
-      thinking.remove();
-
-      if(
-        !response.ok
-      ){
-
-        addMessage(
-          cleanDisplayText(
-            data.error ||
-            "Something went wrong."
-          ),
-          "ai"
-        );
-
+function typeAIMessage(text,persist=true){
+  const cleaned=cleanDisplayText(text);
+  const wrapper=document.createElement("div");
+  wrapper.className="message ai";
+  const bubble=document.createElement("div");
+  bubble.className="bubble";
+  wrapper.appendChild(bubble);
+  chat.appendChild(wrapper);
+  const chunks=cleaned.match(/\S+\s*/g)||[cleaned];
+  let index=0;
+  return new Promise(resolve=>{
+    typingTimer=setInterval(()=>{
+      if(index>=chunks.length){
+        clearInterval(typingTimer);typingTimer=null;
+        const actions=document.createElement("div");
+        actions.className="message-actions";
+        actions.appendChild(actionButton("Copy",async e=>{
+          await navigator.clipboard?.writeText(cleaned).catch(()=>{});
+          e.currentTarget.textContent="Copied";
+          setTimeout(()=>e.currentTarget.textContent="Copy",900);
+        }));
+        actions.appendChild(actionButton("Regenerate",()=>regenerateLast()));
+        wrapper.appendChild(actions);
+        if(persist)addStoredMessage("assistant",cleaned);
+        resolve();
         return;
       }
+      const amount=Math.min(4,chunks.length-index);
+      for(let i=0;i<amount;i++)bubble.textContent+=chunks[index++];
+      chat.scrollTop=chat.scrollHeight;
+    },26);
+  });
+}
+function contextForRequest(excludeLastUser=false){
+  const c=getActiveChat();
+  if(!c)return[];
+  let msgs=c.messages.map(m=>({role:m.role,text:m.text}));
+  if(excludeLastUser&&msgs.at(-1)?.role==="user")msgs=msgs.slice(0,-1);
+  return msgs.slice(-MAX_CONTEXT_MESSAGES);
+}
+async function requestReply({message,attachments=[],history=[]}){
+  requestController=new AbortController();
+  const response=await fetch(CHAT_API_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    signal:requestController.signal,
+    body:JSON.stringify({
+      message,
+      instructions:localStorage.getItem("lampai_instructions")||"",
+      history,
+      attachments:await Promise.all(attachments.map(serializeAttachment))
+    })
+  });
+  const raw=await response.text();
+  let data={};
+  try{data=raw?JSON.parse(raw):{}}catch{data={error:raw||"The server returned an invalid response."}}
+  if(!response.ok)throw new Error(data.error||"Something went wrong.");
+  return data.reply||"I didn't get a response.";
+}
+async function sendCurrent(){
+  const text=input.value.trim();
+  const outgoing=[...selectedAttachments];
+  if(!text&&!outgoing.length)return;
+  if(generating){stopGeneration();return}
 
-      typeAIMessage(
-        data.reply ||
-        "I didn't get a response."
-      );
+  ensureChat();
+  document.querySelector(".welcome")?.remove();
+  addUserMessage(text,outgoing,[],true);
+  const history=contextForRequest(true);
+  input.value="";autoGrow();
+  selectedAttachments=[];renderAttachments();
 
-      selectedAttachments =
-        [];
-
-      renderAttachments();
-
-    }catch(error){
-
-      thinking.remove();
-
-      addMessage(
-        cleanDisplayText(
-          error?.message ||
-          "I couldn't connect right now."
-        ),
-        "ai"
-      );
-
-    }finally{
-
-      input.disabled =
-        false;
-
-      send.disabled =
-        false;
-
-      input.focus();
-    }
+  const thinking=addThinkingMessage();
+  setGenerating(true);
+  try{
+    const reply=await requestReply({message:text,attachments:outgoing,history});
+    requestController=null;
+    thinking.remove();
+    await typeAIMessage(reply,true);
+  }catch(error){
+    requestController=null;
+    thinking.remove();
+    if(error.name!=="AbortError")addAIMessage(error.message||"I couldn't connect right now.",true,true);
+  }finally{
+    setGenerating(false);
+    input.focus();
   }
-);
+}
+form.addEventListener("submit",e=>{
+  e.preventDefault();
+  if(generating)stopGeneration();else sendCurrent();
+});
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&window.innerWidth>700){
+    e.preventDefault();
+    if(generating)stopGeneration();else sendCurrent();
+  }
+});
+function autoGrow(){
+  input.style.height="auto";
+  input.style.height=Math.min(input.scrollHeight,132)+"px";
+}
+input.addEventListener("input",autoGrow);
 
+async function regenerateLast(){
+  if(generating)return;
+  const c=getActiveChat();
+  if(!c)return;
+  let userIndex=-1;
+  for(let i=c.messages.length-1;i>=0;i--){
+    if(c.messages[i].role==="user"){userIndex=i;break}
+  }
+  if(userIndex<0)return;
+  const userMsg=c.messages[userIndex];
+  while(c.messages.length>userIndex+1)c.messages.pop();
+  c.updated=Date.now();saveChats();
+  renderActiveChat();
+
+  const history=c.messages.slice(0,userIndex).slice(-MAX_CONTEXT_MESSAGES).map(m=>({role:m.role,text:m.text}));
+  const thinking=addThinkingMessage();
+  setGenerating(true);
+  try{
+    const reply=await requestReply({message:userMsg.text,attachments:[],history});
+    requestController=null;
+    thinking.remove();
+    await typeAIMessage(reply,true);
+  }catch(error){
+    requestController=null;
+    thinking.remove();
+    if(error.name!=="AbortError")addAIMessage(error.message||"I couldn't connect right now.",true,true);
+  }finally{setGenerating(false)}
+}
+
+let recognition=null;
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SpeechRecognition){
+  recognition=new SpeechRecognition();
+  recognition.continuous=false;
+  recognition.interimResults=true;
+  recognition.lang=navigator.language||"en-US";
+  recognition.onstart=()=>{micButton.textContent="●"};
+  recognition.onend=()=>{micButton.textContent="🎙"};
+  recognition.onerror=()=>{micButton.textContent="🎙"};
+  recognition.onresult=e=>{
+    let finalText="";
+    for(let i=e.resultIndex;i<e.results.length;i++)finalText+=e.results[i][0].transcript;
+    input.value=(input.value+" "+finalText).trim();
+    autoGrow();
+  };
+  micButton.onclick=()=>{try{recognition.start()}catch{}};
+}else{
+  micButton.onclick=()=>alert("Voice input is not available in this browser yet.");
+}
+
+function showStatus(text,actionLabel="",action=null){
+  statusText.textContent=text;
+  if(actionLabel&&action){
+    statusAction.hidden=false;statusAction.textContent=actionLabel;statusAction.onclick=action;
+  }else statusAction.hidden=true;
+  statusBar.classList.add("show");
+}
+function hideStatus(){statusBar.classList.remove("show")}
+window.addEventListener("offline",()=>showStatus("You're offline. Saved chats still work."));
+window.addEventListener("online",()=>{showStatus("Back online.");setTimeout(hideStatus,1600)});
+if(!navigator.onLine)showStatus("You're offline. Saved chats still work.");
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",async()=>{
+    try{
+      const reg=await navigator.serviceWorker.register("/sw.js",{scope:"/"});
+      reg.addEventListener("updatefound",()=>{
+        const worker=reg.installing;
+        worker?.addEventListener("statechange",()=>{
+          if(worker.state==="installed"&&navigator.serviceWorker.controller){
+            showStatus("A LampAI update is ready.","Reload",()=>location.reload());
+          }
+        });
+      });
+    }catch{}
+  });
+}
+
+if(!activeChatId||!getActiveChat()){
+  if(chats.length)activeChatId=chats[0].id;
+  else createChat();
+}
+saveChats();
+renderActiveChat();
+renderHistory();
+autoGrow();
 </script>
-
 </body>
 </html>
