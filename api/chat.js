@@ -13,6 +13,33 @@ function cleanReply(text = "") {
     .trim();
 }
 
+function cleanHistory(value) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .slice(-14)
+    .map((item) => {
+      const role =
+        item?.role === "assistant"
+          ? "assistant"
+          : item?.role === "user"
+            ? "user"
+            : null;
+
+      const text = String(item?.text || "")
+        .trim()
+        .slice(0, 6000);
+
+      if (!role || !text) return null;
+
+      return {
+        role,
+        content: text
+      };
+    })
+    .filter(Boolean);
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -43,7 +70,11 @@ export default async function handler(req, res) {
         : req.body || {};
 
     const message = String(body.message || "").trim();
-    const instructions = String(body.instructions || "").trim();
+    const instructions = String(body.instructions || "")
+      .trim()
+      .slice(0, 8000);
+
+    const history = cleanHistory(body.history);
 
     const attachments =
       Array.isArray(body.attachments)
@@ -61,7 +92,7 @@ export default async function handler(req, res) {
     if (message) {
       userContent.push({
         type: "text",
-        text: message
+        text: message.slice(0, 12000)
       });
     }
 
@@ -101,7 +132,7 @@ export default async function handler(req, res) {
           type: "text",
           text:
             `Attached file: ${name}\n\n` +
-            content
+            content.slice(0, 18000)
         });
 
         continue;
@@ -128,6 +159,8 @@ You are LampAI.
 Answer naturally like a normal person.
 Be concise and direct.
 For normal questions, usually answer in 1 to 4 short sentences.
+Use the conversation history when it helps answer follow-up questions.
+Do not claim you remember anything that is not present in the conversation history or current message.
 Do not reveal chain-of-thought, private reasoning, scratch work, or internal analysis.
 Never output <think> tags or describe your hidden reasoning.
 Use plain text by default.
@@ -145,6 +178,18 @@ For image questions, identify or answer what the user asked first. Do not write 
         ? `\nUser customization:\n${instructions}`
         : "");
 
+    const messages = [
+      {
+        role: "system",
+        content: systemPrompt
+      },
+      ...history,
+      {
+        role: "user",
+        content: userContent
+      }
+    ];
+
     const response = await fetch(GROQ_URL, {
       method: "POST",
 
@@ -155,24 +200,12 @@ For image questions, identify or answer what the user asked first. Do not write 
 
       body: JSON.stringify({
         model: MODEL,
-
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: userContent
-          }
-        ],
-
+        messages,
         reasoning_effort: "none",
         reasoning_format: "hidden",
-
         temperature: 0.7,
         top_p: 0.8,
-        max_completion_tokens: 700
+        max_completion_tokens: 900
       })
     });
 
